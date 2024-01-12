@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">BootFlasher</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="fragment_label">刷入或导出img文件</string>
+    <string name="refresh">刷新</string>
+    <string name="previous">返回</string>
+
+</resources>
