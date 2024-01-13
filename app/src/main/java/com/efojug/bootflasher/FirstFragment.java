@@ -73,9 +73,10 @@ public class FirstFragment extends Fragment {
         binding.bootbDump.setOnClickListener(view1 -> dumpImg("b"));
 
         binding.flash.setOnClickListener(view1 -> {
-            flashImg(imgPath, targetPath);
-            Snackbar.make(view1, "刷入中", Snackbar.LENGTH_LONG).show();
             binding.flash.setEnabled(false);
+            binding.confirm.setChecked(false);
+            binding.log.setText(binding.log.getText() + Date() + " 刷入中..." + "\n");
+            flashImg(imgPath, targetPath);
         });
 
         binding.confirm.setOnCheckedChangeListener((compoundButton, b) -> {
@@ -146,6 +147,7 @@ public class FirstFragment extends Fragment {
     public void flashImg(String imgPath, String targetPath) {
         try {
             fsh("dd if=" + imgPath + " of=" + targetPath + ";sync");
+            binding.log.setText(binding.log.getText() + Date() + " 刷入成功" + "\n");
         } catch (Exception e) {
             binding.log.setText(binding.log.getText() + Date() + " 刷入失败：" + e + "\n");
         }
