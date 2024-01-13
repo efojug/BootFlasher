@@ -3,6 +3,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("..\\certificate\\bootflasher.jks")
+            storePassword = "000000"
+            keyPassword = "000000"
+            keyAlias = "key0"
+        }
+    }
     namespace = "com.efojug.bootflasher"
     compileSdk = 34
 
@@ -21,6 +29,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
