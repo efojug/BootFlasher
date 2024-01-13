@@ -7,19 +7,6 @@
     android:orientation="vertical"
     android:padding="16dp"
     tools:context=".FirstFragment">
-
-    <TextView
-        android:id="@+id/root"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="16dp"
-        android:text="未获取ROOT权限，程序不可用"
-        android:textColor="#E91E63"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
     
     <TextView
         android:id="@+id/slot"
@@ -117,9 +104,24 @@
         android:enabled="false"
         app:icon="@android:drawable/ic_menu_send" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:autoLink="web"
+        android:text="作者: efojug Github: github.com/efojug/BootFlasher"
+        android:textSize="12sp"
+        android:layout_gravity="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="16sp"
+        android:text="程序日志" />
+
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent" >
 
         <TextView
             android:id="@+id/log"

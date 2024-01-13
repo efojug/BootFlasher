@@ -48,7 +48,6 @@ public class FirstFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         if (getRoot()) {
-            binding.root.setVisibility(View.GONE);
             binding.slot.setVisibility(View.VISIBLE);
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
             try {
