@@ -130,14 +130,14 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public void dumpImg(String  boot_partition) {
+    public void dumpImg(String boot_partition) {
         try {
             if (Objects.equals(boot_partition, "a")) {
-                fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + (new Random().nextInt(900000) + 100000) + ";sync");
+                fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
                 binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
             }
             if (Objects.equals(boot_partition, "b")) {
-                fsh("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + (new Random().nextInt(900000) + 100000) + ";sync");
+                fsh("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
                 binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
             }
         } catch (Exception e) {
