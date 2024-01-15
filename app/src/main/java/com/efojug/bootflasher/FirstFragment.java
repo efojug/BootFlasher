@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -44,21 +45,32 @@ public class FirstFragment extends Fragment {
 
     String boot_a;
     String boot_b;
+    Boolean Aonly = false;
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        try {
+            fsh("lpdump");
+        } catch (Exception ignore) {}
         if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", ""), "true")) {
             binding.aonlyWarning.setVisibility(View.VISIBLE);
             binding.slot.setVisibility(View.GONE);
             binding.bootbDump.setEnabled(false);
             binding.bootbFlash.setEnabled(false);
+            Aonly = true;
         }
 
         if (getRoot()) {
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
             try {
-                boot_a = fsh("ls -l /dev/block/by-name/boot_a").split("-> ")[1];
-                binding.bootA.setText("boot_a分区：" + boot_a);
+                if (Aonly) {
+                    boot_a = fsh("ls -l /dev/block/by-name/boot").split("-> ")[1];
+                    binding.bootA.setText("boot分区：" + boot_a);
+                } else {
+                    boot_a = fsh("ls -l /dev/block/by-name/boot_a").split("-> ")[1];
+                    binding.bootA.setText("boot_a分区：" + boot_a);
+                }
+
             } catch (Exception e) {
                 binding.log.setText(binding.log.getText() + Date() + " 获取boot_a分区失败 " + e + "\n");
                 binding.bootA.setText("失败");
@@ -138,8 +150,13 @@ public class FirstFragment extends Fragment {
     public void dumpImg(String boot_partition) {
         try {
             if (Objects.equals(boot_partition, "a")) {
-                fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
-                binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
+                if (Aonly) {
+                    fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
+                    binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
+                } else {
+                    fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
+                    binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
+                }
             }
             if (Objects.equals(boot_partition, "b")) {
                 fsh("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
@@ -187,10 +204,11 @@ public class FirstFragment extends Fragment {
         String line;
         StringBuilder output = new StringBuilder();
         while ((line = reader.readLine()) != null) {
-            output.append(line);
+            output.append(line + "\n");
         }
         reader.close();
         binding.log.setText(binding.log.getText() + Date() + " " + output + "\n");
+        binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
         return output.toString();
     }
 }
