@@ -19,8 +19,8 @@ android {
         applicationId = "com.efojug.bootflasher"
         minSdk = 30
         targetSdk = 34
-        versionCode = 30
-        versionName = "1.6"
+        versionCode = 36
+        versionName = "1.8"
     }
 
     buildTypes {
