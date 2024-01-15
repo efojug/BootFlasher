@@ -17,14 +17,17 @@ import com.efojug.bootflasher.databinding.FragmentFirstBinding;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.SequenceInputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class FirstFragment extends Fragment {
 
@@ -46,18 +49,11 @@ public class FirstFragment extends Fragment {
     Boolean Aonly = false;
 
     public void outputLog(String log) {
-        try {
-            binding.log.setText(binding.log.getText() + Date() + " " + log + "\n");
-        } catch (Exception ignored) {
-        }
+        binding.log.setText(binding.log.getText() + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n");
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        try {
-            fsh("lpdump");
-        } catch (Exception ignore) {
-        }
 
         if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", ""), "true")) {
             binding.aonlyWarning.setVisibility(View.VISIBLE);
@@ -76,10 +72,10 @@ public class FirstFragment extends Fragment {
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
             try {
                 if (Aonly) {
-                    boot_a = fsh("ls -l /dev/block/by-name/boot").split("-> ")[1];
+                    boot_a = exeCmd("readlink -f /dev/block/by-name/boot").get();
                     binding.bootA.setText("boot分区：" + boot_a);
                 } else {
-                    boot_a = fsh("ls -l /dev/block/by-name/boot_a").split("-> ")[1];
+                    boot_a = exeCmd("readlink -f /dev/block/by-name/boot_a").get();
                     binding.bootA.setText("boot_a分区：" + boot_a);
                 }
 
@@ -88,7 +84,7 @@ public class FirstFragment extends Fragment {
                 binding.bootA.setText("失败");
             }
             try {
-                boot_b = fsh("ls -l /dev/block/by-name/boot_b").split("-> ")[1];
+                boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b").get();
                 binding.bootB.setText("boot_b分区：" + boot_b);
             } catch (Exception e) {
                 outputLog("获取boot_b分区失败 " + e);
@@ -129,10 +125,6 @@ public class FirstFragment extends Fragment {
     String imgPath;
     String targetPath;
 
-    public String Date() {
-        return new SimpleDateFormat("HH:mm:ss").format(new Date());
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
@@ -157,25 +149,26 @@ public class FirstFragment extends Fragment {
 
     public void dumpImg(String boot_partition) {
         try {
-            fsh("mount -o remount,rw " + targetPath);
             if (Objects.equals(boot_partition, "a")) {
+                exeCmd("blockdev --setrw " + boot_a);
                 if (Aonly)
-                    fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
+                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_$(date +%Y%m%d%H%M%S).img bs=4M;sync");
                 else
-                    fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
-            } else if (Objects.equals(boot_partition, "b"))
-                fsh("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
-            outputLog("已导出到/Download");
+                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_$(date +%Y%m%d%H%M%S).img bs=4M;sync");
+            } else if (Objects.equals(boot_partition, "b")) {
+                exeCmd("blockdev --setrw " + boot_b);
+                exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_$(date +%Y%m%d%H%M%S).img bs=4M;sync");
+            }
+            outputLog("正在导出到/Download");
         } catch (Exception e) {
-            binding.log.setText(binding.log.getText() + Date() + " 导出失败 " + e + "\n");
             outputLog("导出失败 " + e);
         }
     }
 
     public void flashImg(String imgPath, String targetPath) {
         try {
-            fsh("mount -o remount,rw " + targetPath);
-            fsh("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync");
+            exeCmd("blockdev --setrw " + targetPath);
+            exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync");
             outputLog("刷入成功");
         } catch (Exception e) {
             outputLog("刷入失败 " + e);
@@ -198,23 +191,23 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public String fsh(String command) throws Exception {
-        Process process = Runtime.getRuntime().exec("su");
-        OutputStream outputStream = process.getOutputStream();
-        outputStream.write(command.getBytes(StandardCharsets.UTF_8));
-        outputStream.flush();
-        outputStream.close();
-        int exitCode = process.waitFor();
-        InputStream inputStream = process.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        StringBuilder output = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            output.append(line + "\n");
-        }
-        reader.close();
-        outputLog(output.toString());
-        binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
-        return output.toString();
+    public Future<String> exeCmd(String command) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Callable<String> callable = () -> {
+            StringBuilder sb = new StringBuilder();
+            Process process = Runtime.getRuntime().exec("su -c " + command);
+            BufferedReader br = new BufferedReader(new InputStreamReader(new SequenceInputStream(process.getInputStream(), process.getErrorStream()), StandardCharsets.UTF_8));
+            String s;
+            while ((s = br.readLine()) != null) {
+                outputLog(s);
+                sb.append(s).append("\n");
+            }
+            process.waitFor();
+            binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
+            return sb.toString();
+        };
+        Future<String> futureResult = executor.submit(callable);
+        executor.shutdown();
+        return futureResult;
     }
 }

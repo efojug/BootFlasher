@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.androidApplication)
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -36,11 +37,14 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         viewBinding = true
+    }
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
@@ -52,6 +56,8 @@ dependencies {
     implementation(libs.navigation.ui)
 
     implementation(kotlin("stdlib-jdk8", "1.8.22"))
+    implementation("androidx.core:core-ktx:+")
+    implementation("androidx.core:core-ktx:+")
 }
 //configurations.all {
 //    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
