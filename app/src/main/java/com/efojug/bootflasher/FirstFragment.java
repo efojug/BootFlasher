@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ScrollView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,7 +14,6 @@ import androidx.fragment.app.Fragment;
 
 import com.efojug.bootflasher.Utils.SystemPropertiesUtils;
 import com.efojug.bootflasher.databinding.FragmentFirstBinding;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,12 +45,20 @@ public class FirstFragment extends Fragment {
     String boot_b;
     Boolean Aonly = false;
 
+    public void outputLog(String log) {
+        try {
+            binding.log.setText(binding.log.getText() + Date() + " " + log + "\n");
+        } catch (Exception ignored) {
+        }
+    }
+
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         try {
             fsh("lpdump");
         } catch (Exception ignore) {
         }
+
         if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", ""), "true")) {
             binding.aonlyWarning.setVisibility(View.VISIBLE);
             binding.slot.setVisibility(View.GONE);
@@ -78,14 +84,14 @@ public class FirstFragment extends Fragment {
                 }
 
             } catch (Exception e) {
-                binding.log.setText(binding.log.getText() + Date() + " 获取boot_a分区失败 " + e + "\n");
+                outputLog("获取boot_a分区失败 " + e);
                 binding.bootA.setText("失败");
             }
             try {
                 boot_b = fsh("ls -l /dev/block/by-name/boot_b").split("-> ")[1];
                 binding.bootB.setText("boot_b分区：" + boot_b);
             } catch (Exception e) {
-                binding.log.setText(binding.log.getText() + Date() + " 获取boot_b失败 " + e + "\n");
+                outputLog("获取boot_b分区失败 " + e);
                 binding.bootB.setText("失败");
             }
         } else {
@@ -99,7 +105,7 @@ public class FirstFragment extends Fragment {
         binding.flash.setOnClickListener(view1 -> {
             binding.flash.setEnabled(false);
             binding.confirm.setChecked(false);
-            binding.log.setText(binding.log.getText() + Date() + " 刷入中..." + "\n");
+            outputLog("开始刷写");
             flashImg(imgPath, targetPath);
         });
 
@@ -130,26 +136,22 @@ public class FirstFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == 1) {
-                try {
+            try {
+                if (requestCode == 1) {
                     imgPath = "/storage/emulated/0/" + data.getData().getPath().split(":")[1];
                     targetPath = boot_a;
                     binding.confirm.setEnabled(true);
-                } catch (Exception e) {
-                    binding.log.setText(binding.log.getText() + Date() + " 获取路径失败 " + e + "\n");
                 }
-            }
-            if (requestCode == 2) {
-                try {
+                if (requestCode == 2) {
                     imgPath = "/storage/emulated/0/" + data.getData().getPath().split(":")[1];
                     targetPath = boot_b;
                     binding.confirm.setEnabled(true);
-                } catch (Exception e) {
-                    binding.log.setText(binding.log.getText() + Date() + " 获取路径失败 " + e + "\n");
                 }
+            } catch (Exception e) {
+                outputLog("获取路径失败 " + e);
             }
             binding.command.setText(imgPath + " -> " + targetPath);
-            binding.log.setText(binding.log.getText() + Date() + " " + imgPath + " -> " + targetPath + "\n");
+            outputLog(imgPath + " -> " + targetPath);
         }
     }
 
@@ -157,20 +159,16 @@ public class FirstFragment extends Fragment {
         try {
             fsh("mount -o remount,rw " + targetPath);
             if (Objects.equals(boot_partition, "a")) {
-                if (Aonly) {
+                if (Aonly)
                     fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
-                    binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
-                } else {
+                else
                     fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
-                    binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
-                }
-            }
-            if (Objects.equals(boot_partition, "b")) {
+            } else if (Objects.equals(boot_partition, "b"))
                 fsh("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
-                binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
-            }
+            outputLog("已导出到/Download");
         } catch (Exception e) {
             binding.log.setText(binding.log.getText() + Date() + " 导出失败 " + e + "\n");
+            outputLog("导出失败 " + e);
         }
     }
 
@@ -178,9 +176,9 @@ public class FirstFragment extends Fragment {
         try {
             fsh("mount -o remount,rw " + targetPath);
             fsh("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync");
-            binding.log.setText(binding.log.getText() + Date() + " 刷入成功" + "\n");
+            outputLog("刷入成功");
         } catch (Exception e) {
-            binding.log.setText(binding.log.getText() + Date() + " 刷入失败：" + e + "\n");
+            outputLog("刷入失败 " + e);
         }
     }
 
@@ -195,7 +193,7 @@ public class FirstFragment extends Fragment {
             Runtime.getRuntime().exec("su");
             return true;
         } catch (IOException i) {
-            binding.log.setText(binding.log.getText() + Date() + " " + i + "\n");
+            outputLog(i.toString());
             return false;
         }
     }
@@ -215,7 +213,7 @@ public class FirstFragment extends Fragment {
             output.append(line + "\n");
         }
         reader.close();
-        binding.log.setText(binding.log.getText() + Date() + " " + output + "\n");
+        outputLog(output.toString());
         binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
         return output.toString();
     }

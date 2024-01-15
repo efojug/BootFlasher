@@ -14,10 +14,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
         android:layout_marginStart="18dp"
-        android:textSize="20sp"
-        android:textColor="#D81B60"
         android:text="您的手机分区类型为Aonly，\n使用本工具可能导致未知错误!"
-        android:visibility="gone"/>
+        android:textColor="#D81B60"
+        android:textSize="20sp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/notUnlockBootloader"
@@ -25,28 +25,28 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
         android:layout_marginStart="18dp"
-        android:textSize="16sp"
-        android:textColor="#D81B60"
         android:text="您的手机未解锁Bootloader！\n请注意：在未解锁Bootloader的手机上修改系统文件会导致无法开机"
-        android:visibility="gone"/>
+        android:textColor="#D81B60"
+        android:textSize="16sp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/slot"
-        android:layout_marginStart="18dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
-        android:textSize="20sp"
-        android:textColor="#E91E63" />
+        android:layout_marginStart="18dp"
+        android:textColor="#E91E63"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/boot_a"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
-        android:textSize="16sp"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="12dp"
-        android:layout_marginStart="20dp" />
+        android:textSize="16sp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -74,9 +74,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
-        android:textSize="16sp"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="12dp"
-        android:layout_marginStart="20dp" />
+        android:textSize="16sp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -101,11 +101,11 @@
 
     <TextView
         android:id="@+id/command"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="20dp"
-        android:text="null -> null"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="12dp"
+        android:text="null -> null" />
 
     <CheckBox
         android:id="@+id/confirm"
@@ -123,29 +123,29 @@
         android:layout_marginStart="18dp"
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="12dp"
-        android:text="执行"
         android:enabled="false"
+        android:text="执行"
         app:icon="@android:drawable/ic_menu_send" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:autoLink="web"
         android:text="作者: efojug Github: github.com/efojug/BootFlasher"
-        android:textSize="12sp"
-        android:layout_gravity="center" />
+        android:textSize="12sp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:textSize="16sp"
-        android:text="程序日志" />
+        android:text="程序日志"
+        android:textSize="16sp" />
 
     <ScrollView
         android:id="@+id/log_scrollview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/log"
@@ -153,5 +153,4 @@
             android:layout_height="match_parent" />
 
     </ScrollView>
-
 </LinearLayout>
