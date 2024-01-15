@@ -20,6 +20,17 @@
         android:visibility="gone"/>
 
     <TextView
+        android:id="@+id/notUnlockBootloader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:layout_marginStart="18dp"
+        android:textSize="16sp"
+        android:textColor="#D81B60"
+        android:text="您的手机未解锁Bootloader！\n请注意：在未解锁Bootloader的手机上修改系统文件会导致无法开机"
+        android:visibility="gone"/>
+
+    <TextView
         android:id="@+id/slot"
         android:layout_marginStart="18dp"
         android:layout_width="wrap_content"

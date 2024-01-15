@@ -60,6 +60,11 @@ public class FirstFragment extends Fragment {
             binding.bootbFlash.setEnabled(false);
             Aonly = true;
         }
+        if (SystemPropertiesUtils.getProperty("ro.boot.flash.locked", "1").equals("1") || !SystemPropertiesUtils.getProperty("ro.boot.verifiedbootstate", "green").equals("orange")) {
+            binding.notUnlockBootloader.setVisibility(View.VISIBLE);
+            binding.bootaFlash.setEnabled(false);
+            binding.bootbFlash.setEnabled(false);
+        }
 
         if (getRoot()) {
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
