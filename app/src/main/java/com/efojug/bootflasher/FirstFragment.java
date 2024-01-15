@@ -47,9 +47,14 @@ public class FirstFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", ""), "true")) {
+            binding.aonlyWarning.setVisibility(View.VISIBLE);
+            binding.slot.setVisibility(View.GONE);
+            binding.bootbDump.setEnabled(false);
+            binding.bootbFlash.setEnabled(false);
+        }
 
         if (getRoot()) {
-            binding.slot.setVisibility(View.VISIBLE);
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
             try {
                 boot_a = fsh("ls -l /dev/block/by-name/boot_a").split("-> ")[1];
