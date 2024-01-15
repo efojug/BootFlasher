@@ -150,17 +150,18 @@ public class FirstFragment extends Fragment {
 
     public void dumpImg(String boot_partition) {
         try {
+            fsh("mount -o remount,rw " + targetPath);
             if (Objects.equals(boot_partition, "a")) {
                 if (Aonly) {
-                    fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
+                    fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
                     binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
                 } else {
-                    fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
+                    fsh("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
                     binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
                 }
             }
             if (Objects.equals(boot_partition, "b")) {
-                fsh("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + (new Random().nextInt(900000) + 100000) + ".img" + ";sync");
+                fsh("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + (new Random().nextInt(900000) + 100000) + ".img" + " bs=4M;sync");
                 binding.log.setText(binding.log.getText() + Date() + " 已导出到/Download " + "\n");
             }
         } catch (Exception e) {
@@ -170,7 +171,8 @@ public class FirstFragment extends Fragment {
 
     public void flashImg(String imgPath, String targetPath) {
         try {
-            fsh("dd if=" + imgPath + " of=" + targetPath + ";sync");
+            fsh("mount -o remount,rw " + targetPath);
+            fsh("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync");
             binding.log.setText(binding.log.getText() + Date() + " 刷入成功" + "\n");
         } catch (Exception e) {
             binding.log.setText(binding.log.getText() + Date() + " 刷入失败：" + e + "\n");
