@@ -51,7 +51,8 @@ public class FirstFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         try {
             fsh("lpdump");
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", ""), "true")) {
             binding.aonlyWarning.setVisibility(View.VISIBLE);
             binding.slot.setVisibility(View.GONE);
@@ -104,13 +105,13 @@ public class FirstFragment extends Fragment {
         binding.bootaFlash.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
-            startActivityForResult(Intent.createChooser(intent, "选择您要刷入到boot_a的镜像文件"), 1);
+            startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 1);
         });
 
         binding.bootbFlash.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
-            startActivityForResult(Intent.createChooser(intent, "选择您要刷入到boot_b的镜像文件"), 2);
+            startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 2);
         });
     }
 
