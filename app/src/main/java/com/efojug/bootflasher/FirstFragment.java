@@ -33,10 +33,7 @@ public class FirstFragment extends Fragment {
     private FragmentFirstBinding binding;
 
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         binding = FragmentFirstBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -48,7 +45,7 @@ public class FirstFragment extends Fragment {
     Boolean Aonly = false;
 
     public void outputLog(String log) {
-        binding.log.setText(binding.log.getText() + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n");
+        binding.log.post(() -> binding.log.setText(binding.log.getText() + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n"));
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -158,17 +155,21 @@ public class FirstFragment extends Fragment {
 
     public void dumpImg(String boot_partition) {
         try {
+            String date = new SimpleDateFormat("HH:mm:ss").format(new Date());
             if (Objects.equals(boot_partition, "a")) {
                 exeCmd("blockdev --setrw " + boot_a);
-                if (Aonly)
-                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_$(date +%Y%m%d%H%M%S).img bs=4M;sync");
-                else
-                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_$(date +%Y%m%d%H%M%S).img bs=4M;sync");
+                if (Aonly) {
+                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync");
+                    outputLog("导出到/Download/boot_" + date + ".img");
+                } else {
+                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync");
+                    outputLog("导出到/Download/boot_a_" + date + ".img");
+                }
             } else if (Objects.equals(boot_partition, "b")) {
                 exeCmd("blockdev --setrw " + boot_b);
-                exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_$(date +%Y%m%d%H%M%S).img bs=4M;sync");
+                exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync");
+                outputLog("导出到/Download/boot_b_" + date + ".img");
             }
-            outputLog("正在导出到/Download");
         } catch (Exception e) {
             outputLog("导出失败 " + e);
         }
