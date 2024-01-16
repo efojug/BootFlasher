@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -64,27 +63,37 @@ public class FirstFragment extends Fragment {
         }
         if (SystemPropertiesUtils.getProperty("ro.boot.flash.locked", "1").equals("1") || !SystemPropertiesUtils.getProperty("ro.boot.verifiedbootstate", "green").equals("orange")) {
             binding.notUnlockBootloader.setVisibility(View.VISIBLE);
+            binding.blNotice.setVisibility(View.VISIBLE);
+            binding.unlock.setVisibility(View.VISIBLE);
             binding.bootaFlash.setEnabled(false);
             binding.bootbFlash.setEnabled(false);
         }
+        binding.unlock.setOnClickListener(v -> {
+            binding.unlock.setEnabled(false);
+            binding.unlock.setText("功能已解锁");
+            binding.bootaFlash.setEnabled(true);
+            binding.bootbFlash.setEnabled(true);
+        });
 
         if (getRoot()) {
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
             try {
                 if (Aonly) {
                     boot_a = exeCmd("readlink -f /dev/block/by-name/boot").get();
+                    boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText("boot分区：" + boot_a);
                 } else {
                     boot_a = exeCmd("readlink -f /dev/block/by-name/boot_a").get();
+                    boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText("boot_a分区：" + boot_a);
                 }
-
             } catch (Exception e) {
                 outputLog("获取boot_a分区失败 " + e);
                 binding.bootA.setText("失败");
             }
             try {
                 boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b").get();
+                boot_b = boot_b.substring(0, boot_b.length() - 1);
                 binding.bootB.setText("boot_b分区：" + boot_b);
             } catch (Exception e) {
                 outputLog("获取boot_b分区失败 " + e);

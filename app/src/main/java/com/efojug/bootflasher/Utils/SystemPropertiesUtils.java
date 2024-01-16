@@ -12,8 +12,7 @@ public final class SystemPropertiesUtils {
             value = (String) (get.invoke(c, key, defaultValue));
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return value;
         }
+        return value;
     }
 }

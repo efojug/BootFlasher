@@ -25,9 +25,29 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
         android:layout_marginStart="18dp"
-        android:text="您的手机未解锁Bootloader！\n请注意：在未解锁Bootloader的手机上修改系统文件会导致无法开机"
+        android:text="检测到未解锁Bootloader!"
         android:textColor="#D81B60"
-        android:textSize="16sp"
+        android:textSize="20sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/bl_notice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="2dp"
+        android:text="注意：在未解锁Bootloader的手机上修改系统文件会导致无法开机"
+        android:textColor="#D81B60"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/unlock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:layout_marginStart="18dp"
+        android:text="我已解锁Bootloader"
         android:visibility="gone" />
 
     <TextView
@@ -45,7 +65,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:textSize="16sp" />
 
     <LinearLayout
@@ -75,7 +95,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:textSize="16sp" />
 
     <LinearLayout
