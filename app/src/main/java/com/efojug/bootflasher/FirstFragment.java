@@ -155,7 +155,7 @@ public class FirstFragment extends Fragment {
 
     public void dumpImg(String boot_partition) {
         try {
-            String date = new SimpleDateFormat("HH:mm:ss").format(new Date());
+            String date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             if (Objects.equals(boot_partition, "a")) {
                 exeCmd("blockdev --setrw " + boot_a);
                 if (Aonly) {

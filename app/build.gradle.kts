@@ -19,7 +19,7 @@ android {
         applicationId = "com.efojug.bootflasher"
         minSdk = 30
         targetSdk = 34
-        versionCode = 50
+        versionCode = 52
         versionName = "2.0"
     }
 
