@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">BootFlasher</string>
+    <string name="main_title">Flash or export Image files</string>
+    <string name="flash">Flash</string>
+    <string name="export">Export</string>
+    <string name="current_slot">Current slot</string>
+    <string name="not_have_root">Root permission not detected!</string>
+    <string name="a_slot_only_error_message">The partition type of your phone is Aonly. Using this tool may cause unknown errors!</string>
+    <string name="not_unlock_bootloader">Your phone\'s bootloader is not unlocked! Please note: Modifying system files on a phone without unlocking the bootloader will cause the phone to fail to boot.</string>
+    <string name="partition">Partition</string>
+    <string name="loading">Loading...</string>
+    <string name="error">Error</string>
+    <string name="application_log">Log</string>
+</resources>
