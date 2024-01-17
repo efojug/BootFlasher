@@ -12,4 +12,5 @@
     <string name="loading">加载中...</string>
     <string name="error">错误</string>
     <string name="application_log">日志</string>
+    <string name="confirm_unlock_bootloader">我已经解锁过BootLoader</string>
 </resources>
