@@ -120,12 +120,19 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/command"
+        android:id="@+id/source"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="12dp"
-        android:text="null -> null" />
+        android:layout_marginTop="8dp"
+        android:text="源目录：未选择" />
+
+    <TextView
+        android:id="@+id/target"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:text="目标目录：未选择" />
 
     <CheckBox
         android:id="@+id/confirm"

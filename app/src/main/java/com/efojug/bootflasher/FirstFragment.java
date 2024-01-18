@@ -79,6 +79,8 @@ public class FirstFragment extends Fragment {
                     boot_a = exeCmd("readlink -f /dev/block/by-name/boot").get();
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText("boot分区：" + boot_a);
+                    binding.bootaDump.setText("导出boot");
+                    binding.bootaFlash.setText("刷入boot");
                 } else {
                     boot_a = exeCmd("readlink -f /dev/block/by-name/boot_a").get();
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
@@ -89,9 +91,14 @@ public class FirstFragment extends Fragment {
                 binding.bootA.setText("失败");
             }
             try {
-                boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b").get();
-                boot_b = boot_b.substring(0, boot_b.length() - 1);
-                binding.bootB.setText("boot_b分区：" + boot_b);
+                if (!Aonly) {
+                    boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b").get();
+                    boot_b = boot_b.substring(0, boot_b.length() - 1);
+                    binding.bootB.setText("boot_b分区：" + boot_b);
+                } else {
+                    binding.bootB.setText("无boot_b分区");
+                }
+
             } catch (Exception e) {
                 outputLog("获取boot_b分区失败 " + e);
                 binding.bootB.setText("失败");
@@ -148,7 +155,8 @@ public class FirstFragment extends Fragment {
             } catch (Exception e) {
                 outputLog("获取路径失败 " + e);
             }
-            binding.command.setText(imgPath + " -> " + targetPath);
+            binding.source.setText("源：" + imgPath);
+            binding.target.setText("目标：" + targetPath);
             outputLog(imgPath + " -> " + targetPath);
         }
     }
