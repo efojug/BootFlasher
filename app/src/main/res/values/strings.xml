@@ -12,4 +12,12 @@
     <string name="error">Error</string>
     <string name="application_log">Log</string>
     <string name="confirm_unlock_bootloader">I have unlocked the bootloader</string>
+    <string name="unable_read_slot_path">Unable to read slot %s path</string>
+    <string name="please_select_img_file">Please select the .img file</string>
+    <string name="no_file_permissions">No permission to manage files</string>
+    <string name="request_permission">Request permission</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm_title">Are you sure you want to do this?</string>
+    <string name="confirm_to_flash">Are you sure you want to flash %s to the %s partition?</string>
 </resources>

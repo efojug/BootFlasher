@@ -13,4 +13,12 @@
     <string name="error">错误</string>
     <string name="application_log">日志</string>
     <string name="confirm_unlock_bootloader">我已经解锁过BootLoader</string>
+    <string name="unable_read_slot_path">无法读取%s槽位路径</string>
+    <string name="please_select_img_file">请选择.img文件</string>
+    <string name="no_file_permissions">没有文件权限</string>
+    <string name="request_permission">请求权限</string>
+    <string name="confirm">确认</string>
+    <string name="cancel">取消</string>
+    <string name="confirm_title">你确定要这么做吗?</string>
+    <string name="confirm_to_flash">你确定要将%s刷入到%s分区吗?</string>
 </resources>
