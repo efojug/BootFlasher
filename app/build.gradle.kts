@@ -57,8 +57,6 @@ android {
 }
 
 dependencies {
-    implementation("com.darkrockstudios:mpfilepicker:3.1.0")
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
