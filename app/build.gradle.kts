@@ -56,8 +56,7 @@ dependencies {
     implementation(libs.navigation.ui)
 
     implementation(kotlin("stdlib-jdk8", "1.8.22"))
-    implementation("androidx.core:core-ktx:+")
-    implementation("androidx.core:core-ktx:+")
+    implementation("androidx.core:core-ktx:1.12.0")
 }
 //configurations.all {
 //    exclude("org.jetbrains.kotlin", "kotlin-stdlib")

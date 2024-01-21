@@ -1,19 +1,30 @@
 package com.efojug.bootflasher;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Layout;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import com.efojug.bootflasher.Utils.SystemPropertiesUtils;
 import com.efojug.bootflasher.databinding.FragmentFirstBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,6 +54,7 @@ public class FirstFragment extends Fragment {
     String boot_a;
     String boot_b;
     Boolean Aonly = false;
+    private ProgressDialog progressDialog;
 
     public void outputLog(String log) {
         binding.log.post(() -> binding.log.setText(binding.log.getText() + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n"));
@@ -111,17 +123,12 @@ public class FirstFragment extends Fragment {
         binding.bootaDump.setOnClickListener(view1 -> dumpImg("a"));
         binding.bootbDump.setOnClickListener(view1 -> dumpImg("b"));
 
-        binding.flash.setOnClickListener(view1 -> {
+        binding.flash.setOnClickListener(view1 -> new MaterialAlertDialogBuilder(getContext()).setTitle("确认").setMessage("您将要把\n" + imgPath + "\n刷入到\n" + targetPath + "\n请注意：此操作不可逆！").setPositiveButton("确定", (dialogInterface, i) -> {
             binding.flash.setEnabled(false);
-            binding.confirm.setChecked(false);
             outputLog("开始刷写");
             flashImg(imgPath, targetPath);
-        });
-
-        binding.confirm.setOnCheckedChangeListener((compoundButton, b) -> {
-            binding.flash.setEnabled(binding.confirm.isChecked());
-        });
-
+        }).setNegativeButton("取消", (dialogInterface, i) -> {
+        }).show());
         binding.bootaFlash.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
@@ -145,13 +152,12 @@ public class FirstFragment extends Fragment {
                 if (requestCode == 1) {
                     imgPath = "/storage/emulated/0/" + data.getData().getPath().split(":")[1];
                     targetPath = boot_a;
-                    binding.confirm.setEnabled(true);
                 }
                 if (requestCode == 2) {
                     imgPath = "/storage/emulated/0/" + data.getData().getPath().split(":")[1];
                     targetPath = boot_b;
-                    binding.confirm.setEnabled(true);
                 }
+                binding.flash.setEnabled(true);
             } catch (Exception e) {
                 outputLog("获取路径失败 " + e);
             }
@@ -187,7 +193,6 @@ public class FirstFragment extends Fragment {
         try {
             exeCmd("blockdev --setrw " + targetPath);
             exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync");
-            outputLog("刷入成功");
         } catch (Exception e) {
             outputLog("刷入失败 " + e);
         }
@@ -210,6 +215,13 @@ public class FirstFragment extends Fragment {
     }
 
     public Future<String> exeCmd(String command) {
+        if (progressDialog == null || !progressDialog.isShowing()) {
+            progressDialog = new ProgressDialog(getContext());
+            progressDialog.setCancelable(false);
+            progressDialog.setTitle("执行中...");
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.show();
+        } else progressDialog.setProgressStyle(progressDialog.getProgress() + 10);
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<String> callable = () -> {
             StringBuilder sb = new StringBuilder();
@@ -219,8 +231,11 @@ public class FirstFragment extends Fragment {
             while ((s = br.readLine()) != null) {
                 outputLog(s);
                 sb.append(s).append("\n");
+                progressDialog.setProgress(Math.min(progressDialog.getProgress() + 10, 100));
             }
             process.waitFor();
+            Thread.sleep(1000);
+            progressDialog.dismiss();
             binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
             return sb.toString();
         };
