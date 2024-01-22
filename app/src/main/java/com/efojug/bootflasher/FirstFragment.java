@@ -80,13 +80,13 @@ public class FirstFragment extends Fragment {
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
             try {
                 if (Aonly) {
-                    boot_a = exeCmd("readlink -f /dev/block/by-name/boot").get();
+                    boot_a = exeCmd("readlink -f /dev/block/by-name/boot", false).get();
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText("boot分区：" + boot_a);
                     binding.bootaDump.setText("导出boot");
                     binding.bootaFlash.setText("刷入boot");
                 } else {
-                    boot_a = exeCmd("readlink -f /dev/block/by-name/boot_a").get();
+                    boot_a = exeCmd("readlink -f /dev/block/by-name/boot_a", false).get();
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText("boot_a分区：" + boot_a);
                 }
@@ -96,7 +96,7 @@ public class FirstFragment extends Fragment {
             }
             try {
                 if (!Aonly) {
-                    boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b").get();
+                    boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b", false).get();
                     boot_b = boot_b.substring(0, boot_b.length() - 1);
                     binding.bootB.setText("boot_b分区：" + boot_b);
                 } else {
@@ -121,6 +121,7 @@ public class FirstFragment extends Fragment {
             flashImg(imgPath, targetPath);
         }).setNegativeButton("取消", (dialogInterface, i) -> {
         }).show());
+
         binding.bootaFlash.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
@@ -167,17 +168,17 @@ public class FirstFragment extends Fragment {
         try {
             String date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             if (Objects.equals(boot_partition, "a")) {
-                exeCmd("blockdev --setrw " + boot_a);
+                exeCmd("blockdev --setrw " + boot_a, false);
                 if (Aonly) {
-                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync");
+                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
                     outputLog("导出到/Download/boot_" + date + ".img");
                 } else {
-                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync");
+                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
                     outputLog("导出到/Download/boot_a_" + date + ".img");
                 }
             } else if (Objects.equals(boot_partition, "b")) {
-                exeCmd("blockdev --setrw " + boot_b);
-                exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync");
+                exeCmd("blockdev --setrw " + boot_b, false);
+                exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
                 outputLog("导出到/Download/boot_b_" + date + ".img");
             }
         } catch (Exception e) {
@@ -187,8 +188,10 @@ public class FirstFragment extends Fragment {
 
     public void flashImg(String imgPath, String targetPath) {
         try {
-            exeCmd("blockdev --setrw " + targetPath);
-            exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync");
+            exeCmd("blockdev --setrw " + targetPath, false);
+            exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
+            binding.source.setText("源：未选择");
+            binding.target.setText("目标：未选择");
         } catch (Exception e) {
             outputLog("刷入失败 " + e);
         }
@@ -210,7 +213,7 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public Future<String> exeCmd(String command) {
+    public Future<String> exeCmd(String command, Boolean log) {
         if (progressDialog == null || !progressDialog.isShowing()) {
             progressDialog = new ProgressDialog(getContext());
             progressDialog.setCancelable(false);
@@ -237,6 +240,7 @@ public class FirstFragment extends Fragment {
         };
         Future<String> futureResult = executor.submit(callable);
         executor.shutdown();
+        if (log) outputLog("完成");
         return futureResult;
     }
 }
