@@ -18,9 +18,9 @@ android {
     defaultConfig {
         applicationId = "com.efojug.bootflasher"
         minSdk = 30
-        targetSdk = 34
-        versionCode = 52
-        versionName = "2.0"
+        targetSdk = 32
+        versionCode = 60
+        versionName = "2.1"
     }
 
     buildTypes {

@@ -1,27 +1,19 @@
 package com.efojug.bootflasher;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.text.Layout;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
+import com.efojug.bootflasher.Utils.FileUtil;
 import com.efojug.bootflasher.Utils.SystemPropertiesUtils;
 import com.efojug.bootflasher.databinding.FragmentFirstBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -150,21 +142,25 @@ public class FirstFragment extends Fragment {
         if (resultCode == Activity.RESULT_OK) {
             try {
                 if (requestCode == 1) {
-                    imgPath = "/storage/emulated/0/" + data.getData().getPath().split(":")[1];
+                    imgPath = FileUtil.getPath(getActivity().getApplicationContext(), data.getData());
                     targetPath = boot_a;
-                }
-                if (requestCode == 2) {
-                    imgPath = "/storage/emulated/0/" + data.getData().getPath().split(":")[1];
+                } else if (requestCode == 2) {
+                    imgPath = FileUtil.getPath(getActivity().getApplicationContext(), data.getData());
                     targetPath = boot_b;
                 }
-                binding.flash.setEnabled(true);
             } catch (Exception e) {
                 outputLog("获取路径失败 " + e);
             }
-            binding.source.setText("源：" + imgPath);
-            binding.target.setText("目标：" + targetPath);
-            outputLog(imgPath + " -> " + targetPath);
+            if (imgPath.contains("/")) {
+                binding.flash.setEnabled(true);
+                binding.source.setText("源：" + imgPath);
+                binding.target.setText("目标：" + targetPath);
+                outputLog(imgPath + " -> " + targetPath);
+            } else {
+                new MaterialAlertDialogBuilder(getContext()).setTitle("注意！").setMessage("没有正确获取到文件的路径\n这可能是您选择了一个已经被删除的文件\n这似乎是Android文件选择器的Bug，您可以在选择时点击左上角使用其他文件选择器来选择\n一般情况下，重启手机会刷新Android文件选择器的缓存").setPositiveButton("确定", null).show();
+            }
         }
+
     }
 
     public void dumpImg(String boot_partition) {
