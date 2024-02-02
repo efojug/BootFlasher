@@ -2,8 +2,10 @@ package com.efojug.bootflasher;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -80,13 +83,15 @@ public class FirstFragment extends Fragment {
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
             try {
                 if (Aonly) {
-                    boot_a = exeCmd("readlink -f /dev/block/by-name/boot", false).get();
+                    //boot_a = exeCmd("readlink -f /dev/block/by-name/boot", false).get();
+                    boot_a = newExeCmd("readlink -f /dev/block/by-name/boot", false);
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText("boot分区：" + boot_a);
                     binding.bootaDump.setText("导出boot");
                     binding.bootaFlash.setText("刷入boot");
                 } else {
-                    boot_a = exeCmd("readlink -f /dev/block/by-name/boot_a", false).get();
+                    //boot_a = exeCmd("readlink -f /dev/block/by-name/boot_a", false).get();
+                    boot_a = newExeCmd("readlink -f /dev/block/by-name/boot_a", false);
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText("boot_a分区：" + boot_a);
                 }
@@ -96,7 +101,8 @@ public class FirstFragment extends Fragment {
             }
             try {
                 if (!Aonly) {
-                    boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b", false).get();
+                    //boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b", false).get();
+                    boot_b = newExeCmd("readlink -f /dev/block/by-name/boot_b", false);
                     boot_b = boot_b.substring(0, boot_b.length() - 1);
                     binding.bootB.setText("boot_b分区：" + boot_b);
                 } else {
@@ -168,17 +174,22 @@ public class FirstFragment extends Fragment {
         try {
             String date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             if (Objects.equals(boot_partition, "a")) {
-                exeCmd("blockdev --setrw " + boot_a, false);
+                //exeCmd("blockdev --setrw " + boot_a, false);
+                newExeCmd("blockdev --setrw " + boot_a, false);
                 if (Aonly) {
-                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
+                    //exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
+                    newExeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
                     outputLog("导出到/Download/boot_" + date + ".img");
                 } else {
-                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
+                    //exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
+                    newExeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
                     outputLog("导出到/Download/boot_a_" + date + ".img");
                 }
             } else if (Objects.equals(boot_partition, "b")) {
-                exeCmd("blockdev --setrw " + boot_b, false);
-                exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
+                //exeCmd("blockdev --setrw " + boot_b, false);
+                newExeCmd("blockdev --setrw " + boot_b, false);
+                //exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
+                newExeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
                 outputLog("导出到/Download/boot_b_" + date + ".img");
             }
         } catch (Exception e) {
@@ -188,8 +199,10 @@ public class FirstFragment extends Fragment {
 
     public void flashImg(String imgPath, String targetPath) {
         try {
-            exeCmd("blockdev --setrw " + targetPath, false);
-            exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
+            //exeCmd("blockdev --setrw " + targetPath, false);
+            newExeCmd("blockdev --setrw " + targetPath, false);
+            //exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
+            newExeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
             binding.source.setText("源：未选择");
             binding.target.setText("目标：未选择");
         } catch (Exception e) {
@@ -242,5 +255,62 @@ public class FirstFragment extends Fragment {
         executor.shutdown();
         if (log) outputLog("完成");
         return futureResult;
+    }
+
+    public String newExeCmd(String command, boolean log) throws InterruptedException, ExecutionException, IOException {
+        StringBuilder sb = new StringBuilder();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        // 包装命令执行任务
+        Future<String> futureResult = executor.submit(() -> {
+            Process process = null;
+            try {
+                // 执行命令
+                process = Runtime.getRuntime().exec("su -c " + command);
+                // 创建读取器，注意处理流关闭
+                BufferedReader br = new BufferedReader(new InputStreamReader(
+                        new SequenceInputStream(process.getInputStream(), process.getErrorStream()),
+                        StandardCharsets.UTF_8));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (log) {
+                        outputLog(line);
+                    }
+                    sb.append(line).append("\n");
+                    // 更新进度条（假设progressDialog变量已在全局范围内定义）
+                    if (progressDialog != null && progressDialog.isShowing()) {
+                        // 避免进度超过100%
+                        int progress = Math.min(progressDialog.getProgress() + 10, 100);
+                        progressDialog.setProgress(progress);
+                    }
+                }
+                // 等待命令执行完成并获取退出码
+                int exitCode = process.waitFor();
+                if (exitCode != 0) {
+                    throw new IOException("发生运行时错误：" + exitCode);
+                }
+                // 确保流被关闭
+                br.close();
+            } catch (IOException | InterruptedException e) {
+                // 错误处理，关闭进程并抛出异常
+                if (process != null) {
+                    process.destroy();
+                }
+                throw new RuntimeException("Error executing command: " + command, e);
+            } finally {
+                // 如果ProgressDialog还在显示，关闭它
+                if (progressDialog != null && progressDialog.isShowing()) progressDialog.dismiss();
+                // UI刷新应在主线程中执行
+                if (Looper.myLooper() == Looper.getMainLooper()) binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
+            }
+            return sb.toString();
+        });
+        // 关闭executor服务
+        executor.shutdown();
+        // 获取命令执行结果
+        String result = futureResult.get();
+        if (log) {
+            outputLog("完成");
+        }
+        return result;
     }
 }
