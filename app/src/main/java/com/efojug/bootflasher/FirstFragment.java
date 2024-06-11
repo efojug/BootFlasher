@@ -137,6 +137,25 @@ public class FirstFragment extends Fragment {
             startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 2);
         });
 
+        binding.flashCustomPartition.setOnClickListener(view1 -> {
+            EditText CustomPartitionName = new EditText(getContext());
+            CustomPartitionName.setSingleLine();
+            CustomPartitionName.setHint("请填写分区名称");
+            CustomPartitionName.requestFocus();
+            CustomPartitionName.setFocusable(true);
+            new MaterialAlertDialogBuilder(getContext()).setTitle("写入分区").setView(CustomPartitionName).setPositiveButton("确定", (dialog, which) -> {
+                String content = CustomPartitionName.getText().toString();
+                if (content.isBlank()) {
+                    Toast.makeText(getContext(), "请填写分区名称", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 3);
+                targetPath = getPartition(CustomPartitionName.getText().toString());
+            }).setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss()).show();
+        });
+
         binding.dumpCustomPartition.setOnClickListener(view1 -> {
             EditText CustomPartitionName = new EditText(getContext());
             CustomPartitionName.setSingleLine();
@@ -172,6 +191,8 @@ public class FirstFragment extends Fragment {
                 } else if (requestCode == 2) {
                     imgPath = FileUtil.getPath(getActivity().getApplicationContext(), data.getData());
                     targetPath = boot_b;
+                } else if (requestCode == 3){
+                    imgPath = FileUtil.getPath(getActivity().getApplicationContext(), data.getData());
                 }
             } catch (Exception e) {
                 outputLog("获取路径失败 " + e);
