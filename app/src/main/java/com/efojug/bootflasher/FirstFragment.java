@@ -68,6 +68,7 @@ public class FirstFragment extends Fragment {
             binding.bootbFlash.setEnabled(false);
             Aonly = true;
         }
+
         if (SystemPropertiesUtils.getProperty("ro.boot.flash.locked", "1").equals("1") || !SystemPropertiesUtils.getProperty("ro.boot.verifiedbootstate", "green").equals("orange")) {
             binding.notUnlockBootloader.setVisibility(View.VISIBLE);
             binding.blNotice.setVisibility(View.VISIBLE);
@@ -76,6 +77,7 @@ public class FirstFragment extends Fragment {
             binding.bootbFlash.setEnabled(false);
             binding.flashCustomPartition.setEnabled(false);
         }
+
         binding.unlock.setOnClickListener(v -> new MaterialAlertDialogBuilder(getContext()).setTitle("注意").setMessage("这只适用于一些使用Magisk作为Root权限管理器时，Magisk可能会自动伪装BootLoader解锁状态\n您已经被警告过了").setPositiveButton("确定", (dialogInterface, i) -> {
             binding.unlock.setEnabled(false);
             binding.unlock.setVisibility(View.GONE);
@@ -84,32 +86,41 @@ public class FirstFragment extends Fragment {
             binding.bootbFlash.setEnabled(true);
             binding.flashCustomPartition.setEnabled(true);
             outputLog("已解锁受限功能");
+
         }).setNegativeButton("我没有解锁Bootloader", (dialogInterface, i) -> {
         }).show());
 
-
         if (getRoot()) {
-            binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
-            if (Aonly) {
-                boot_a = getPartition("boot");
-                boot_a = boot_a.substring(0, boot_a.length() - 1);
-                binding.bootA.setText("boot分区：" + boot_a);
-                binding.bootaDump.setText("导出boot");
-                binding.bootaFlash.setText("刷入boot");
-            } else {
-                boot_a = getPartition("boot_a");
-                boot_a = boot_a.substring(0, boot_a.length() - 1);
-                binding.bootA.setText("boot_a分区：" + boot_a);
+            binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", "未知"));
+            try {
+                if (Aonly) {
+                    boot_a = getPartition("boot");
+                    boot_a = boot_a.substring(0, boot_a.length() - 1);
+                    binding.bootA.setText("boot分区：" + boot_a);
+                    binding.bootaDump.setText("导出boot");
+                    binding.bootaFlash.setText("刷入boot");
+                } else {
+                    boot_a = getPartition("boot_a");
+                    boot_a = boot_a.substring(0, boot_a.length() - 1);
+                    binding.bootA.setText("boot_a分区：" + boot_a);
+                }
+            } catch (Exception e) {
+                outputLog(Aonly ? "获取boot分区失败" : "获取boot_a分区失败");
             }
 
-            if (!Aonly) {
-                boot_b = getPartition("boot_b");
-                boot_b = boot_b.substring(0, boot_b.length() - 1);
-                binding.bootB.setText("boot_b分区：" + boot_b);
-            } else {
-                binding.bootB.setVisibility(View.GONE);
-                binding.bootBOperate.setVisibility(View.GONE);
+            try {
+                if (!Aonly) {
+                    boot_b = getPartition("boot_b");
+                    boot_b = boot_b.substring(0, boot_b.length() - 1);
+                    binding.bootB.setText("boot_b分区：" + boot_b);
+                } else {
+                    binding.bootB.setVisibility(View.GONE);
+                    binding.bootBOperate.setVisibility(View.GONE);
+                }
+            } catch (Exception e) {
+                outputLog("获取boot_b分区失败");
             }
+
         } else {
             Toast.makeText(getContext(), "未检测到root权限，请给予权限后重试", Toast.LENGTH_LONG).show();
             System.exit(0);
@@ -149,10 +160,15 @@ public class FirstFragment extends Fragment {
                     Toast.makeText(getContext(), "请填写分区名称", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                try {
+                    targetPath = getPartition(CustomPartitionName.getText().toString());
+                } catch (Exception e) {
+                    outputLog("获取" + CustomPartitionName.getText().toString() + "分区失败：" + e);
+                    return;
+                }
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*/*");
                 startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 3);
-                targetPath = getPartition(CustomPartitionName.getText().toString());
             }).setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss()).show();
         });
 
@@ -168,7 +184,11 @@ public class FirstFragment extends Fragment {
                     Toast.makeText(getContext(), "请填写分区名称", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                dumpImg(CustomPartitionName.getText().toString(), getPartition(CustomPartitionName.getText().toString()));
+                try {
+                    dumpImg(CustomPartitionName.getText().toString(), getPartition(CustomPartitionName.getText().toString()));
+                } catch (Exception e) {
+                    outputLog("获取" + CustomPartitionName.getText().toString() + "分区失败：" + e);
+                }
             }).setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss()).show();
         });
 
@@ -197,6 +217,7 @@ public class FirstFragment extends Fragment {
             } catch (Exception e) {
                 outputLog("获取路径失败 " + e);
             }
+
             if (imgPath.contains("/")) {
                 binding.flash.setEnabled(true);
                 binding.source.setText("源：" + imgPath);
@@ -262,26 +283,19 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public String getPartition(String partitionName) {
-        try {
-            return exeCmd("readlink -f /dev/block/by-name/" + partitionName, false);
-        } catch (Exception e) {
-            outputLog("获取" + partitionName + "分区失败：" + e);
-            return "失败";
-        }
-
+    public String getPartition(String partitionName) throws Exception {
+        String res = exeCmd("readlink -f /dev/block/by-name/" + partitionName, false);
+        if (!res.contains("by-name")) return res;
+        throw new Exception("无法获取正确的分区路径");
     }
 
     public String exeCmd(String command, boolean log) throws InterruptedException, ExecutionException {
         StringBuilder sb = new StringBuilder();
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        // 包装命令执行任务
         Future<String> futureResult = executor.submit(() -> {
             Process process = null;
             try {
-                // 执行命令
                 process = Runtime.getRuntime().exec("su -c " + command);
-                // 创建读取器
                 BufferedReader br = new BufferedReader(new InputStreamReader(
                         new SequenceInputStream(process.getInputStream(), process.getErrorStream()),
                         StandardCharsets.UTF_8));
@@ -291,38 +305,29 @@ public class FirstFragment extends Fragment {
                         outputLog(line);
                     }
                     sb.append(line).append("\n");
-                    // 更新进度条
                     if (progressDialog != null && progressDialog.isShowing()) {
-                        // 避免进度超过100%
                         int progress = Math.min(progressDialog.getProgress() + 10, 100);
                         progressDialog.setProgress(progress);
                     }
                 }
-                // 等待执行完成
                 int exitCode = process.waitFor();
                 if (exitCode != 0) {
                     throw new IOException("发生运行时错误：" + exitCode);
                 }
-                // 关闭流
                 br.close();
             } catch (IOException | InterruptedException e) {
-                // 错误处理，关闭进程并抛出异常
                 if (process != null) {
                     process.destroy();
                 }
                 throw new RuntimeException("Error executing command: " + command, e);
             } finally {
-                // 如果ProgressDialog还在显示，关闭它
                 if (progressDialog != null && progressDialog.isShowing()) progressDialog.dismiss();
-                // UI刷新应在主线程中执行
                 if (Looper.myLooper() == Looper.getMainLooper())
                     binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
             }
             return sb.toString();
         });
-        // 关闭executor服务
         executor.shutdown();
-        // 获取命令执行结果
         String result = futureResult.get();
         if (log) {
             outputLog("完成");
