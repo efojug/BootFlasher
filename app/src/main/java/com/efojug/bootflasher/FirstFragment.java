@@ -1,14 +1,18 @@
 package com.efojug.bootflasher;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.ProgressDialog;
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -71,55 +74,49 @@ public class FirstFragment extends Fragment {
             binding.unlock.setVisibility(View.VISIBLE);
             binding.bootaFlash.setEnabled(false);
             binding.bootbFlash.setEnabled(false);
+            binding.flashCustomPartition.setEnabled(false);
         }
-        binding.unlock.setOnClickListener(v -> {
+        binding.unlock.setOnClickListener(v -> new MaterialAlertDialogBuilder(getContext()).setTitle("注意").setMessage("这只适用于一些使用Magisk作为Root权限管理器时，Magisk可能会自动伪装BootLoader解锁状态\n您已经被警告过了").setPositiveButton("确定", (dialogInterface, i) -> {
             binding.unlock.setEnabled(false);
-            binding.unlock.setText("功能已解锁");
+            binding.unlock.setVisibility(View.GONE);
+            binding.blNotice.setVisibility(View.GONE);
             binding.bootaFlash.setEnabled(true);
             binding.bootbFlash.setEnabled(true);
-        });
+            binding.flashCustomPartition.setEnabled(true);
+            outputLog("已解锁受限功能");
+        }).setNegativeButton("我没有解锁Bootloader", (dialogInterface, i) -> {
+        }).show());
+
 
         if (getRoot()) {
             binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", ""));
-            try {
-                if (Aonly) {
-                    //boot_a = exeCmd("readlink -f /dev/block/by-name/boot", false).get();
-                    boot_a = newExeCmd("readlink -f /dev/block/by-name/boot", false);
-                    boot_a = boot_a.substring(0, boot_a.length() - 1);
-                    binding.bootA.setText("boot分区：" + boot_a);
-                    binding.bootaDump.setText("导出boot");
-                    binding.bootaFlash.setText("刷入boot");
-                } else {
-                    //boot_a = exeCmd("readlink -f /dev/block/by-name/boot_a", false).get();
-                    boot_a = newExeCmd("readlink -f /dev/block/by-name/boot_a", false);
-                    boot_a = boot_a.substring(0, boot_a.length() - 1);
-                    binding.bootA.setText("boot_a分区：" + boot_a);
-                }
-            } catch (Exception e) {
-                outputLog("获取boot_a分区失败 " + e);
-                binding.bootA.setText("失败");
+            if (Aonly) {
+                boot_a = getPartition("boot");
+                boot_a = boot_a.substring(0, boot_a.length() - 1);
+                binding.bootA.setText("boot分区：" + boot_a);
+                binding.bootaDump.setText("导出boot");
+                binding.bootaFlash.setText("刷入boot");
+            } else {
+                boot_a = getPartition("boot_a");
+                boot_a = boot_a.substring(0, boot_a.length() - 1);
+                binding.bootA.setText("boot_a分区：" + boot_a);
             }
-            try {
-                if (!Aonly) {
-                    //boot_b = exeCmd("readlink -f /dev/block/by-name/boot_b", false).get();
-                    boot_b = newExeCmd("readlink -f /dev/block/by-name/boot_b", false);
-                    boot_b = boot_b.substring(0, boot_b.length() - 1);
-                    binding.bootB.setText("boot_b分区：" + boot_b);
-                } else {
-                    binding.bootB.setText("无boot_b分区");
-                }
 
-            } catch (Exception e) {
-                outputLog("获取boot_b分区失败 " + e);
-                binding.bootB.setText("失败");
+            if (!Aonly) {
+                boot_b = getPartition("boot_b");
+                boot_b = boot_b.substring(0, boot_b.length() - 1);
+                binding.bootB.setText("boot_b分区：" + boot_b);
+            } else {
+                binding.bootB.setVisibility(View.GONE);
+                binding.bootBOperate.setVisibility(View.GONE);
             }
         } else {
             Toast.makeText(getContext(), "未检测到root权限，请给予权限后重试", Toast.LENGTH_LONG).show();
             System.exit(0);
         }
 
-        binding.bootaDump.setOnClickListener(view1 -> dumpImg("a"));
-        binding.bootbDump.setOnClickListener(view1 -> dumpImg("b"));
+        binding.bootaDump.setOnClickListener(view1 -> dumpImg(null, "boot_a"));
+        binding.bootbDump.setOnClickListener(view1 -> dumpImg(null, "boot_b"));
 
         binding.flash.setOnClickListener(view1 -> new MaterialAlertDialogBuilder(getContext()).setTitle("确认").setMessage("您将要把\n" + imgPath + "\n刷入到\n" + targetPath + "\n请注意：此操作不可逆！").setPositiveButton("确定", (dialogInterface, i) -> {
             binding.flash.setEnabled(false);
@@ -138,6 +135,27 @@ public class FirstFragment extends Fragment {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
             startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 2);
+        });
+
+        binding.dumpCustomPartition.setOnClickListener(view1 -> {
+            EditText CustomPartitionName = new EditText(getContext());
+            CustomPartitionName.setSingleLine();
+            CustomPartitionName.setHint("请填写分区名称");
+            CustomPartitionName.requestFocus();
+            CustomPartitionName.setFocusable(true);
+            new MaterialAlertDialogBuilder(getContext()).setTitle("导出分区").setView(CustomPartitionName).setPositiveButton("确定", (dialog, which) -> {
+                String content = CustomPartitionName.getText().toString();
+                if (content.isBlank()) {
+                    Toast.makeText(getContext(), "请填写分区名称", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                dumpImg(CustomPartitionName.getText().toString(), getPartition(CustomPartitionName.getText().toString()));
+            }).setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss()).show();
+        });
+
+        binding.confirmFlashCustomPartition.setOnClickListener(view1 -> {
+            binding.confirmFlashCustomPartition.setVisibility(View.GONE);
+            binding.showFlashCustomPartition.setVisibility(View.VISIBLE);
         });
     }
 
@@ -170,27 +188,26 @@ public class FirstFragment extends Fragment {
 
     }
 
-    public void dumpImg(String boot_partition) {
+    public void dumpImg(String Name, String Partition) {
         try {
             String date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-            if (Objects.equals(boot_partition, "a")) {
-                //exeCmd("blockdev --setrw " + boot_a, false);
-                newExeCmd("blockdev --setrw " + boot_a, false);
+            if (Objects.equals(Partition, "boot_a")) {
+                exeCmd("blockdev --setrw " + boot_a, false);
                 if (Aonly) {
-                    //exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
-                    newExeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
+                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
                     outputLog("导出到/Download/boot_" + date + ".img");
                 } else {
-                    //exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
-                    newExeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
+                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
                     outputLog("导出到/Download/boot_a_" + date + ".img");
                 }
-            } else if (Objects.equals(boot_partition, "b")) {
-                //exeCmd("blockdev --setrw " + boot_b, false);
-                newExeCmd("blockdev --setrw " + boot_b, false);
-                //exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
-                newExeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
+            } else if (Objects.equals(Partition, "boot_b")) {
+                exeCmd("blockdev --setrw " + boot_b, false);
+                exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
                 outputLog("导出到/Download/boot_b_" + date + ".img");
+            } else {
+                exeCmd("blockdev --setrw " + Partition, false);
+                exeCmd("dd if=" + Partition + " of=" + "/storage/emulated/0/Download/" + Name + "_" + date + ".img bs=4M;sync", true);
+                outputLog("导出到/Download/" + Name + "_" + date + ".img");
             }
         } catch (Exception e) {
             outputLog("导出失败 " + e);
@@ -199,10 +216,8 @@ public class FirstFragment extends Fragment {
 
     public void flashImg(String imgPath, String targetPath) {
         try {
-            //exeCmd("blockdev --setrw " + targetPath, false);
-            newExeCmd("blockdev --setrw " + targetPath, false);
-            //exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
-            newExeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
+            exeCmd("blockdev --setrw " + targetPath, false);
+            exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
             binding.source.setText("源：未选择");
             binding.target.setText("目标：未选择");
         } catch (Exception e) {
@@ -226,38 +241,17 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public Future<String> exeCmd(String command, Boolean log) {
-        if (progressDialog == null || !progressDialog.isShowing()) {
-            progressDialog = new ProgressDialog(getContext());
-            progressDialog.setCancelable(false);
-            progressDialog.setTitle("执行中...");
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            progressDialog.show();
-        } else progressDialog.setProgressStyle(progressDialog.getProgress() + 10);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable<String> callable = () -> {
-            StringBuilder sb = new StringBuilder();
-            Process process = Runtime.getRuntime().exec("su -c " + command);
-            BufferedReader br = new BufferedReader(new InputStreamReader(new SequenceInputStream(process.getInputStream(), process.getErrorStream()), StandardCharsets.UTF_8));
-            String s;
-            while ((s = br.readLine()) != null) {
-                outputLog(s);
-                sb.append(s).append("\n");
-                progressDialog.setProgress(Math.min(progressDialog.getProgress() + 10, 100));
-            }
-            process.waitFor();
-            Thread.sleep(1000);
-            progressDialog.dismiss();
-            binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
-            return sb.toString();
-        };
-        Future<String> futureResult = executor.submit(callable);
-        executor.shutdown();
-        if (log) outputLog("完成");
-        return futureResult;
+    public String getPartition(String partitionName) {
+        try {
+            return exeCmd("readlink -f /dev/block/by-name/" + partitionName, false);
+        } catch (Exception e) {
+            outputLog("获取" + partitionName + "分区失败：" + e);
+            return "失败";
+        }
+
     }
 
-    public String newExeCmd(String command, boolean log) throws InterruptedException, ExecutionException, IOException {
+    public String exeCmd(String command, boolean log) throws InterruptedException, ExecutionException {
         StringBuilder sb = new StringBuilder();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         // 包装命令执行任务
@@ -266,7 +260,7 @@ public class FirstFragment extends Fragment {
             try {
                 // 执行命令
                 process = Runtime.getRuntime().exec("su -c " + command);
-                // 创建读取器，注意处理流关闭
+                // 创建读取器
                 BufferedReader br = new BufferedReader(new InputStreamReader(
                         new SequenceInputStream(process.getInputStream(), process.getErrorStream()),
                         StandardCharsets.UTF_8));
@@ -276,19 +270,19 @@ public class FirstFragment extends Fragment {
                         outputLog(line);
                     }
                     sb.append(line).append("\n");
-                    // 更新进度条（假设progressDialog变量已在全局范围内定义）
+                    // 更新进度条
                     if (progressDialog != null && progressDialog.isShowing()) {
                         // 避免进度超过100%
                         int progress = Math.min(progressDialog.getProgress() + 10, 100);
                         progressDialog.setProgress(progress);
                     }
                 }
-                // 等待命令执行完成并获取退出码
+                // 等待执行完成
                 int exitCode = process.waitFor();
                 if (exitCode != 0) {
                     throw new IOException("发生运行时错误：" + exitCode);
                 }
-                // 确保流被关闭
+                // 关闭流
                 br.close();
             } catch (IOException | InterruptedException e) {
                 // 错误处理，关闭进程并抛出异常
@@ -300,7 +294,8 @@ public class FirstFragment extends Fragment {
                 // 如果ProgressDialog还在显示，关闭它
                 if (progressDialog != null && progressDialog.isShowing()) progressDialog.dismiss();
                 // UI刷新应在主线程中执行
-                if (Looper.myLooper() == Looper.getMainLooper()) binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
+                if (Looper.myLooper() == Looper.getMainLooper())
+                    binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
             }
             return sb.toString();
         });

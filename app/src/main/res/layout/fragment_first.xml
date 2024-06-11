@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     tools:context=".FirstFragment">
 
     <TextView
@@ -27,7 +28,7 @@
         android:layout_marginStart="18dp"
         android:text="检测到未解锁Bootloader!"
         android:textColor="#D81B60"
-        android:textSize="20sp"
+        android:textSize="24sp"
         android:visibility="gone" />
 
     <TextView
@@ -37,7 +38,7 @@
         android:layout_gravity="start|top"
         android:layout_marginStart="18dp"
         android:layout_marginTop="2dp"
-        android:text="注意：在未解锁Bootloader的手机上修改系统文件会导致无法开机"
+        android:text="注意：在未解锁Bootloader的手机上修改分区会导致无法开机"
         android:textColor="#D81B60"
         android:visibility="gone" />
 
@@ -84,7 +85,7 @@
             android:id="@+id/boota_flash"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="20dp"
             android:text="刷入boot_a" />
 
     </LinearLayout>
@@ -99,6 +100,7 @@
         android:textSize="16sp" />
 
     <LinearLayout
+        android:id="@+id/boot_b_operate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp">
@@ -114,7 +116,7 @@
             android:id="@+id/bootb_flash"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="20dp"
             android:text="刷入boot_b" />
 
     </LinearLayout>
@@ -142,10 +144,39 @@
         android:layout_marginTop="8dp"
         android:layout_marginStart="18dp"
         android:layout_marginEnd="18dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="5dp"
         android:enabled="false"
         android:text="执行"
         app:icon="@android:drawable/ic_menu_send" />
+
+    <Button
+        android:id="@+id/confirmFlashCustomPartition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="我希望刷写其他分区\n我已了解这可能造成无法挽回的后果"/>
+
+    <LinearLayout
+        android:id="@+id/showFlashCustomPartition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" >
+
+        <Button
+            android:id="@+id/dumpCustomPartition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="导出自定义分区" />
+
+        <Button
+            android:id="@+id/flashCustomPartition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="刷入自定义分区" />
+
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
@@ -160,7 +191,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="程序日志"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:layout_marginTop="5dp"/>
 
     <ScrollView
         android:id="@+id/log_scrollview"
@@ -170,7 +202,7 @@
         <TextView
             android:id="@+id/log"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content" />
 
     </ScrollView>
 </LinearLayout>
