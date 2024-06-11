@@ -1,6 +1,20 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     id("org.jetbrains.kotlin.android")
+}
+
+val versionPropsFile = File(project.rootProject.projectDir, "version.properties")
+fun getVersionCode(): Int {
+    val props = Properties()
+    versionPropsFile.inputStream().use { props.load(it) }
+    val versionCode = props.getProperty("VERSION_CODE").toInt()
+    val newVersionCode = versionCode + 1
+    props["VERSION_CODE"] = newVersionCode.toString()
+    versionPropsFile.writer().use { props.store(it, null) }
+    return versionCode
 }
 
 android {
@@ -19,8 +33,8 @@ android {
         applicationId = "com.efojug.bootflasher"
         minSdk = 30
         targetSdk = 34
-        versionCode = 85
-        versionName = "3.0"
+        versionCode = getVersionCode()
+        versionName = "3.1"
     }
 
     buildTypes {
