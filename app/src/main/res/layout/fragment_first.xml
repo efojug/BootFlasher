@@ -170,6 +170,12 @@
             android:text="导出自定义分区" />
 
         <Button
+            android:id="@+id/listAllPartitions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="列出所有分区"/>
+
+        <Button
             android:id="@+id/flashCustomPartition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

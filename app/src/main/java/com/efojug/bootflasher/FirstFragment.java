@@ -1,9 +1,8 @@
 package com.efojug.bootflasher;
 
 import android.app.Activity;
-import android.app.Application;
+import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
@@ -11,18 +10,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.efojug.bootflasher.Utils.FileUtil;
 import com.efojug.bootflasher.Utils.SystemPropertiesUtils;
 import com.efojug.bootflasher.databinding.FragmentFirstBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FirstFragment extends Fragment {
 
@@ -196,23 +194,58 @@ public class FirstFragment extends Fragment {
             binding.confirmFlashCustomPartition.setVisibility(View.GONE);
             binding.showFlashCustomPartition.setVisibility(View.VISIBLE);
         });
+
+        binding.listAllPartitions.setOnClickListener(view1 -> {
+            int progress = 10;
+            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getContext());
+            LinearProgressIndicator linearProgressIndicator = new LinearProgressIndicator(getContext());
+            linearProgressIndicator.setProgress(progress);
+            alertDialogBuilder.setCancelable(false);
+            alertDialogBuilder.setTitle("检索分区列表");
+            alertDialogBuilder.setView(linearProgressIndicator);
+            alertDialogBuilder.setMessage("请等待...");
+            Dialog dialog = alertDialogBuilder.show();
+            try {
+                String str = exeCmd("ls -l /dev/block/by-name", false);
+                StringBuilder tmp = new StringBuilder();
+                int space = 0;
+                boolean output = false;
+                for (int i = 0; i < str.length(); i++) {
+                    if (!output && space >= 7 && ((Character) str.charAt(i)).toString().equals(" ")) output = true;
+                    else space++;
+                    if (output) {
+                        if (str.charAt(i) == '\n') {
+                            outputLog(tmp.toString());
+                            space = 0;
+                            progress += 5;
+                            linearProgressIndicator.setProgress(progress);
+                        }
+                        tmp.append(str.charAt(i));
+                    }
+                }
+                dialog.dismiss();
+            } catch (Exception e) {
+                outputLog(e.toString());
+                dialog.dismiss();
+            }
+        });
     }
 
     String imgPath;
     String targetPath;
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             try {
                 if (requestCode == 1) {
-                    imgPath = FileUtil.getPath(getActivity().getApplicationContext(), data.getData());
+                    imgPath = FileUtil.getPath(getContext(), data.getData());
                     targetPath = boot_a;
                 } else if (requestCode == 2) {
-                    imgPath = FileUtil.getPath(getActivity().getApplicationContext(), data.getData());
+                    imgPath = FileUtil.getPath(getContext(), data.getData());
                     targetPath = boot_b;
                 } else if (requestCode == 3){
-                    imgPath = FileUtil.getPath(getActivity().getApplicationContext(), data.getData());
+                    imgPath = FileUtil.getPath(getContext(), data.getData());
                 }
             } catch (Exception e) {
                 outputLog("获取路径失败 " + e);
@@ -224,7 +257,7 @@ public class FirstFragment extends Fragment {
                 binding.target.setText("目标：" + targetPath);
                 outputLog(imgPath + " -> " + targetPath);
             } else {
-                new MaterialAlertDialogBuilder(getContext()).setTitle("注意！").setMessage("没有正确获取到文件的路径\n这可能是您选择了一个已经被删除的文件\n这似乎是Android文件选择器的Bug，您可以在选择时点击左上角使用其他文件选择器来选择\n一般情况下，重启手机会刷新Android文件选择器的缓存").setPositiveButton("确定", null).show();
+                new MaterialAlertDialogBuilder(getContext()).setTitle("没有正确获取到文件的路径").setMessage("这可能是您选择了一个已经被删除的文件\n这似乎是Android文件选择器的Bug，您可以在选择时点击左上角使用其他文件选择器来选择\n一般情况下，重启手机会刷新Android文件选择器的缓存").setPositiveButton("确定", null).show();
             }
         }
 
@@ -328,10 +361,7 @@ public class FirstFragment extends Fragment {
             return sb.toString();
         });
         executor.shutdown();
-        String result = futureResult.get();
-        if (log) {
-            outputLog("完成");
-        }
-        return result;
+        if (log) outputLog("完成");
+        return futureResult.get();
     }
 }
