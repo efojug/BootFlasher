@@ -1,5 +1,7 @@
 package com.efojug.bootflasher;
 
+import static java.lang.Thread.sleep;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -36,7 +38,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
 
 import kotlin.Unit;
 
@@ -132,8 +133,11 @@ public class FirstFragment extends Fragment {
             }
 
         } else {
-            Toast.makeText(getContext(), "未检测到root权限，请给予权限后重试", Toast.LENGTH_LONG).show();
-            System.exit(0);
+            try {
+                Toast.makeText(getContext(), "未检测到root权限，请给予权限后重试", Toast.LENGTH_LONG).show();
+                sleep(200);
+                System.exit(0);
+            } catch (InterruptedException ignored) {}
         }
 
         binding.bootaDump.setOnClickListener(view1 -> dumpImg(null, "boot_a"));
@@ -231,16 +235,6 @@ public class FirstFragment extends Fragment {
             dialog.dismiss();
             return Unit.INSTANCE;
         });
-    }
-
-    private String getPartitionList(@Nullable Dialog dialog) {
-        AtomicReference<String> result = new AtomicReference<>("获取分区列表失败");
-        PartitionUtil.performIOOperationAsync(res -> {
-            result.set(res);
-            return Unit.INSTANCE;
-        });
-        if (dialog != null) dialog.dismiss();
-        return result.get();
     }
 
     String imgPath;
