@@ -3,7 +3,6 @@ package com.efojug.bootflasher;
 import static java.lang.Thread.sleep;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,15 +13,13 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-import com.efojug.bootflasher.utils.FileUtil;
-import com.efojug.bootflasher.utils.SystemPropertiesUtils;
 import com.efojug.bootflasher.databinding.FragmentFirstBinding;
+import com.efojug.bootflasher.utils.FileUtil;
 import com.efojug.bootflasher.utils.PartitionUtil;
-
+import com.efojug.bootflasher.utils.SystemPropertiesUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.BufferedReader;
@@ -137,7 +134,8 @@ public class FirstFragment extends Fragment {
                 Toast.makeText(getContext(), "未检测到root权限，请给予权限后重试", Toast.LENGTH_LONG).show();
                 sleep(200);
                 System.exit(0);
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
         }
 
         binding.bootaDump.setOnClickListener(view1 -> dumpImg(null, "boot_a"));
@@ -222,14 +220,19 @@ public class FirstFragment extends Fragment {
     }
 
     /*
-    * the dialog will automatically close after acquire partition list
-    * */
+     * the dialog will automatically close after acquire partition list
+     * */
     private void showPartitionList(AlertDialog dialog) {
         PartitionUtil.performIOOperationAsync(partitions -> {
-            if (partitions.isBlank()) {
+            if (partitions.isEmpty()) {
                 outputLog("获取分区列表失败");
-            } else {
-                outputLog(partitions);
+                dialog.dismiss();
+                return Unit.INSTANCE;
+            }
+
+            outputLog("分区列表:\n");
+            for (String partition : partitions) {
+                outputLog(partition + "\n");
             }
 
             dialog.dismiss();
