@@ -21,7 +21,6 @@ import com.efojug.bootflasher.databinding.FragmentFirstBinding;
 import com.efojug.bootflasher.Utils.CoroutineUtils;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,20 +28,16 @@ import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 
 public class FirstFragment extends Fragment {
 
@@ -219,19 +214,18 @@ public class FirstFragment extends Fragment {
         });
     }
 
-    String imgPath;
-    String targetPath;
-
     private String getPartitionList(@Nullable Dialog dialog) {
-        final String[] Result = new String[1];
+        AtomicReference<String> result = new AtomicReference<>("获取分区列表失败");
         CoroutineUtils.performIOOperationAsync(res -> {
-            Result[0] = res;
+            result.set(res);
             return Unit.INSTANCE;
         });
         if (dialog != null) dialog.dismiss();
-        return Result[0];
+        return result.get();
     }
 
+    String imgPath;
+    String targetPath;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {

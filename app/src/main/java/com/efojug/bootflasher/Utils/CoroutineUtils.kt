@@ -23,15 +23,15 @@ object CoroutineUtils {
         var space = 0
         var output = false
         for (i in str.indices) {
+            if (output) {
+                tmp.append(str[i])
+                continue
+            }
             if (str[i] == '\n') {
                 res.append(tmp.toString())
                 space = 0
                 output = false
                 tmp = StringBuilder()
-                continue
-            }
-            if (output) {
-                tmp.append(str[i])
                 continue
             }
             if (!output) {
