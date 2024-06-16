@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +12,14 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.efojug.bootflasher.Utils.FileUtil;
 import com.efojug.bootflasher.Utils.SystemPropertiesUtils;
 import com.efojug.bootflasher.databinding.FragmentFirstBinding;
+import com.efojug.bootflasher.Utils.CoroutineUtils;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
@@ -27,13 +29,20 @@ import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 public class FirstFragment extends Fragment {
 
@@ -52,8 +61,14 @@ public class FirstFragment extends Fragment {
     Boolean Aonly = false;
     private ProgressDialog progressDialog;
 
+    Vector<String> logs = new Vector<>();
     public void outputLog(String log) {
-        binding.log.post(() -> binding.log.setText(binding.log.getText() + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n"));
+        if (logs.size() > 5) logs.remove(0);
+        logs.add(new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n");
+        StringBuilder tmp = new StringBuilder();
+        for (int i = 0; i < logs.size(); i++) tmp.append(logs.get(i));
+        binding.log.post(() -> binding.log.setText(tmp.toString()));
+        binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -196,43 +211,26 @@ public class FirstFragment extends Fragment {
         });
 
         binding.listAllPartitions.setOnClickListener(view1 -> {
-            int progress = 10;
             MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getContext());
-            LinearProgressIndicator linearProgressIndicator = new LinearProgressIndicator(getContext());
-            linearProgressIndicator.setProgress(progress);
             alertDialogBuilder.setCancelable(false);
             alertDialogBuilder.setTitle("检索分区列表");
-            alertDialogBuilder.setView(linearProgressIndicator);
             alertDialogBuilder.setMessage("请等待...");
-            Dialog dialog = alertDialogBuilder.show();
-            try {
-                String str = exeCmd("ls -l /dev/block/by-name", false);
-                StringBuilder tmp = new StringBuilder();
-                int space = 0;
-                boolean output = false;
-                for (int i = 0; i < str.length(); i++) {
-                    if (!output && space >= 7 && ((Character) str.charAt(i)).toString().equals(" ")) output = true;
-                    else space++;
-                    if (output) {
-                        if (str.charAt(i) == '\n') {
-                            outputLog(tmp.toString());
-                            space = 0;
-                            progress += 5;
-                            linearProgressIndicator.setProgress(progress);
-                        }
-                        tmp.append(str.charAt(i));
-                    }
-                }
-                dialog.dismiss();
-            } catch (Exception e) {
-                outputLog(e.toString());
-                dialog.dismiss();
-            }
+            outputLog(getPartitionList(alertDialogBuilder.show()));
         });
     }
 
     String imgPath;
     String targetPath;
+
+    private String getPartitionList(@Nullable Dialog dialog) {
+        final String[] Result = new String[1];
+        CoroutineUtils.performIOOperationAsync(res -> {
+            Result[0] = res;
+            return Unit.INSTANCE;
+        });
+        if (dialog != null) dialog.dismiss();
+        return Result[0];
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -355,13 +353,11 @@ public class FirstFragment extends Fragment {
                 throw new RuntimeException("Error executing command: " + command, e);
             } finally {
                 if (progressDialog != null && progressDialog.isShowing()) progressDialog.dismiss();
-                if (Looper.myLooper() == Looper.getMainLooper())
-                    binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
+                if (log) outputLog("完成");
             }
             return sb.toString();
         });
         executor.shutdown();
-        if (log) outputLog("完成");
         return futureResult.get();
     }
 }
