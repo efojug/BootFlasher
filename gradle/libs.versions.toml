@@ -1,6 +1,7 @@
 [versions]
 agp = "8.5.0"
 appcompat = "1.7.0"
+coreKtx = "1.13.1"
 material = "1.12.0"
 constraintlayout = "2.1.4"
 navigationFragment = "2.7.7"
@@ -8,11 +9,12 @@ navigationUi = "2.7.7"
 
 [libraries]
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version = "1.8.1"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-

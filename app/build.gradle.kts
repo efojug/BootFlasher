@@ -69,9 +69,8 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
-
-    implementation(kotlin("stdlib-jdk8", "1.8.22"))
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation(libs.core.ktx)
+    implementation(libs.kotlinx.coroutines)
 }
 //configurations.all {
 //    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
