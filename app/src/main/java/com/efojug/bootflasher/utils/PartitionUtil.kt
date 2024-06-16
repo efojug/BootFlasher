@@ -1,6 +1,5 @@
 package com.efojug.bootflasher.utils
 
-import com.efojug.bootflasher.FirstFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -10,7 +9,7 @@ object PartitionUtil {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     @JvmStatic
-    fun performIOOperationAsync(onResult: (String) -> Unit) {
+    fun performIOOperationAsync(onResult: (List<String>) -> Unit) {
         coroutineScope.launch(Dispatchers.IO) {
             val result = getPartitionsList()
             withContext(Dispatchers.Main) {
@@ -19,28 +18,13 @@ object PartitionUtil {
         }
     }
 
-    private fun getPartitionsList(): String {
-        val str: String = FirstFragment().exeCmd("ls -l /dev/block/by-name", false)
-        var tmp = StringBuilder()
-        val res = StringBuilder().append("分区列表：\n")
-        var space = 0
-        var output = false
-        for (i in str.indices) {
-            if (output) {
-                tmp.append(str[i])
-            }
-            if (str[i] == '\n') {
-                res.append(tmp.toString())
-                space = 0
-                output = false
-                tmp = StringBuilder()
-                continue
-            }
-            if (!output) {
-                if (str[i] == ' ' && space < 7) space++
-                if (space == 7) output = true
-            }
-        }
-        return res.toString()
+    private suspend fun getPartitionsList(): List<String> {
+        val partitions = mutableListOf<String>()
+
+        CmdUtil.execute(cmd = "su -c ls -l /dev/block/by-name | cut -d ' ' -f 8-", onInfo = {
+            partitions.add(it)
+        })
+
+        return partitions
     }
 }
