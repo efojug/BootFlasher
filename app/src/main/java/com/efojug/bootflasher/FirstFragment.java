@@ -221,12 +221,9 @@ public class FirstFragment extends Fragment {
     public void getPartitionList(@Nullable Dialog dialog) {
         CoroutineUtils.performIOOperationAsync(res -> {
             outputLog(res);
-            try {
-                Thread.sleep(1000);
-            } catch (Exception ignored) {}
+            if (dialog != null) dialog.dismiss();
             return Unit.INSTANCE;
         });
-        if (dialog != null) dialog.dismiss();
     }
 
     String imgPath;
