@@ -13,12 +13,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-import com.efojug.bootflasher.Utils.FileUtil;
-import com.efojug.bootflasher.Utils.SystemPropertiesUtils;
+import com.efojug.bootflasher.utils.FileUtil;
+import com.efojug.bootflasher.utils.SystemPropertiesUtils;
 import com.efojug.bootflasher.databinding.FragmentFirstBinding;
-import com.efojug.bootflasher.Utils.CoroutineUtils;
+import com.efojug.bootflasher.utils.PartitionUtil;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -57,6 +58,7 @@ public class FirstFragment extends Fragment {
     private ProgressDialog progressDialog;
 
     Vector<String> logs = new Vector<>();
+
     public void outputLog(String log) {
         if (logs.size() > 5) logs.remove(0);
         logs.add(new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n");
@@ -210,13 +212,30 @@ public class FirstFragment extends Fragment {
             alertDialogBuilder.setCancelable(false);
             alertDialogBuilder.setTitle("检索分区列表");
             alertDialogBuilder.setMessage("请等待...");
-            outputLog(getPartitionList(alertDialogBuilder.show()));
+            AlertDialog dialog = alertDialogBuilder.show();
+            showPartitionList(dialog);
+        });
+    }
+
+    /*
+    * the dialog will automatically close after acquire partition list
+    * */
+    private void showPartitionList(AlertDialog dialog) {
+        PartitionUtil.performIOOperationAsync(partitions -> {
+            if (partitions.isBlank()) {
+                outputLog("获取分区列表失败");
+            } else {
+                outputLog(partitions);
+            }
+
+            dialog.dismiss();
+            return Unit.INSTANCE;
         });
     }
 
     private String getPartitionList(@Nullable Dialog dialog) {
         AtomicReference<String> result = new AtomicReference<>("获取分区列表失败");
-        CoroutineUtils.performIOOperationAsync(res -> {
+        PartitionUtil.performIOOperationAsync(res -> {
             result.set(res);
             return Unit.INSTANCE;
         });
@@ -226,6 +245,7 @@ public class FirstFragment extends Fragment {
 
     String imgPath;
     String targetPath;
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
@@ -236,7 +256,7 @@ public class FirstFragment extends Fragment {
                 } else if (requestCode == 2) {
                     imgPath = FileUtil.getPath(getContext(), data.getData());
                     targetPath = boot_b;
-                } else if (requestCode == 3){
+                } else if (requestCode == 3) {
                     imgPath = FileUtil.getPath(getContext(), data.getData());
                 }
             } catch (Exception e) {

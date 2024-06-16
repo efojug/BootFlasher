@@ -1,22 +1,25 @@
-package com.efojug.bootflasher.Utils
+package com.efojug.bootflasher.utils
 
 import com.efojug.bootflasher.FirstFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-object CoroutineUtils {
+object PartitionUtil {
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+
     @JvmStatic
     fun performIOOperationAsync(onResult: (String) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch(Dispatchers.IO) {
             val result = getPartitionsList()
-            CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.Main) {
                 onResult(result)
             }
         }
     }
 
-    private suspend fun getPartitionsList(): String {
+    private fun getPartitionsList(): String {
         val str: String = FirstFragment().exeCmd("ls -l /dev/block/by-name", false)
         var tmp = StringBuilder()
         val res = StringBuilder()

@@ -1,4 +1,4 @@
-package com.efojug.bootflasher.Utils;
+package com.efojug.bootflasher.utils;
 
 import java.lang.reflect.Method;
 
