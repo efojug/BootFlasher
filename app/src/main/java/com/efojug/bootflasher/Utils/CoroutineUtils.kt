@@ -16,16 +16,15 @@ object CoroutineUtils {
         }
     }
 
-    private suspend fun getPartitionsList(): String {
+    private fun getPartitionsList(): String {
         val str: String = FirstFragment().exeCmd("ls -l /dev/block/by-name", false)
         var tmp = StringBuilder()
-        val res = StringBuilder()
+        val res = StringBuilder().append("分区列表：\n")
         var space = 0
         var output = false
         for (i in str.indices) {
             if (output) {
                 tmp.append(str[i])
-                continue
             }
             if (str[i] == '\n') {
                 res.append(tmp.toString())

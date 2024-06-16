@@ -1,5 +1,7 @@
 package com.efojug.bootflasher;
 
+import static java.lang.Thread.sleep;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -35,7 +37,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
 
 import kotlin.Unit;
 
@@ -130,8 +131,11 @@ public class FirstFragment extends Fragment {
             }
 
         } else {
-            Toast.makeText(getContext(), "未检测到root权限，请给予权限后重试", Toast.LENGTH_LONG).show();
-            System.exit(0);
+            try {
+                Toast.makeText(getContext(), "未检测到root权限，请给予权限后重试", Toast.LENGTH_LONG).show();
+                sleep(200);
+                System.exit(0);
+            } catch (InterruptedException ignored) {}
         }
 
         binding.bootaDump.setOnClickListener(view1 -> dumpImg(null, "boot_a"));
@@ -210,18 +214,19 @@ public class FirstFragment extends Fragment {
             alertDialogBuilder.setCancelable(false);
             alertDialogBuilder.setTitle("检索分区列表");
             alertDialogBuilder.setMessage("请等待...");
-            outputLog(getPartitionList(alertDialogBuilder.show()));
+            getPartitionList(alertDialogBuilder.show());
         });
     }
 
-    private String getPartitionList(@Nullable Dialog dialog) {
-        AtomicReference<String> result = new AtomicReference<>("获取分区列表失败");
+    public void getPartitionList(@Nullable Dialog dialog) {
         CoroutineUtils.performIOOperationAsync(res -> {
-            result.set(res);
+            outputLog(res);
+            try {
+                Thread.sleep(1000);
+            } catch (Exception ignored) {}
             return Unit.INSTANCE;
         });
         if (dialog != null) dialog.dismiss();
-        return result.get();
     }
 
     String imgPath;
