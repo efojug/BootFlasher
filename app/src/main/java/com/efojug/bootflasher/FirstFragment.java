@@ -230,8 +230,7 @@ public class FirstFragment extends Fragment {
                 return Unit.INSTANCE;
             }
 
-            outputLog("分区列表:\n");
-            outputLog(partitions.toString());
+            outputLog("分区列表:\n" + partitions);
 
             dialog.dismiss();
             return Unit.INSTANCE;

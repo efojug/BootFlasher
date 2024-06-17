@@ -22,7 +22,7 @@ object CmdUtil {
 
         onInfo?.let { onInfo ->
             process.inputStream.bufferedReader().forEachLine {
-                onInfo(it)
+                onInfo(it + "\n")
             }
         }
     }

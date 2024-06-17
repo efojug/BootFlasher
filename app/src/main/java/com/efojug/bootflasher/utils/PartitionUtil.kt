@@ -9,7 +9,7 @@ object PartitionUtil {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     @JvmStatic
-    fun performIOOperationAsync(onResult: (List<String>) -> Unit) {
+    fun performIOOperationAsync(onResult: (String) -> Unit) {
         coroutineScope.launch(Dispatchers.IO) {
             val result = getPartitionsList()
             withContext(Dispatchers.Main) {
@@ -18,13 +18,12 @@ object PartitionUtil {
         }
     }
 
-    private suspend fun getPartitionsList(): List<String> {
-        val partitions = mutableListOf<String>()
+    private suspend fun getPartitionsList(): String {
+        val partitions = StringBuilder()
 
-        CmdUtil.execute(cmd = "su -c find /dev/block/by-name/* -type l -print0 | xargs -0 su -c 'for arg; do echo \"\$(basename \"\$arg\") -> \$(readlink -f \"\$arg\")\"; done'", onInfo = {
-            partitions.add(it)
+        CmdUtil.execute(cmd = "su -c find /dev/block/by-name/* -exec sh -c 'echo \"\$(basename \"\$1\") -> \$(readlink -f \"\$1\")\"' _ {} \\;", onInfo = {
+            partitions.append(it)
         })
-
-        return partitions
+        return partitions.toString()
     }
 }
