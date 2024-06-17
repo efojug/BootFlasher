@@ -2,8 +2,8 @@ package com.efojug.bootflasher;
 
 import static java.lang.Thread.sleep;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
@@ -29,6 +32,7 @@ import java.io.SequenceInputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -53,21 +57,26 @@ public class FirstFragment extends Fragment {
     String boot_a;
     String boot_b;
     Boolean Aonly = false;
-    private ProgressDialog progressDialog;
+    String sourcePath;
+    String targetPath;
 
     Vector<String> logs = new Vector<>();
 
     public void outputLog(String log) {
-        if (logs.size() > 100) logs.remove(0);
-        logs.add(new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n");
+        if (logs.size() > 20) logs.remove(0);
+        logs.add(new SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(new Date()) + "> " + log + "\n");
         StringBuilder tmp = new StringBuilder();
         for (int i = 0; i < logs.size(); i++) tmp.append(logs.get(i));
         binding.log.post(() -> binding.log.setText(tmp.toString()));
-        binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
+        binding.logScrollview.fullScroll(View.FOCUS_DOWN);
     }
 
+    @SuppressLint("SetTextI18n")
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        binding.sourceFile.setText(getString(R.string.source_file, getString(R.string.not_selected)));
+        binding.targetPartition.setText(getString(R.string.target_partition, getString(R.string.not_selected)));
 
         if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", "false"), "true")) {
             binding.aonlyWarning.setVisibility(View.VISIBLE);
@@ -77,7 +86,7 @@ public class FirstFragment extends Fragment {
             Aonly = true;
         }
 
-        if (SystemPropertiesUtils.getProperty("ro.boot.flash.locked", "1").equals("1") || !SystemPropertiesUtils.getProperty("ro.boot.verifiedbootstate", "green").equals("orange")) {
+        if (SystemPropertiesUtils.getProperty("ro.boot.flash.locked", "1").equals("1") || SystemPropertiesUtils.getProperty("ro.boot.verifiedbootstate", "green").equals("green")) {
             binding.notUnlockBootloader.setVisibility(View.VISIBLE);
             binding.blNotice.setVisibility(View.VISIBLE);
             binding.unlock.setVisibility(View.VISIBLE);
@@ -86,122 +95,118 @@ public class FirstFragment extends Fragment {
             binding.writeCustomPartition.setEnabled(false);
         }
 
-        binding.unlock.setOnClickListener(v -> new MaterialAlertDialogBuilder(getContext()).setTitle("注意").setMessage("这只适用于一些使用Magisk作为Root权限管理器时，Magisk可能会自动伪装BootLoader解锁状态\n您已经被警告过了").setPositiveButton("确定", (dialogInterface, i) -> {
+        binding.unlock.setOnClickListener(v -> new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.warning)).setMessage(getString(R.string.enable_warn)).setPositiveButton(getString(R.string.confirm), (dialogInterface, i) -> {
             binding.unlock.setEnabled(false);
             binding.unlock.setVisibility(View.GONE);
             binding.blNotice.setVisibility(View.GONE);
             binding.writeBootA.setEnabled(true);
             binding.writeBootB.setEnabled(true);
             binding.writeCustomPartition.setEnabled(true);
-            outputLog("已解锁受限功能");
-
-        }).setNegativeButton("我没有解锁Bootloader", (dialogInterface, i) -> {
-        }).show());
+            outputLog(getString(R.string.restrict_feature_unlocked));
+        }).setNegativeButton(getString(R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss()).show());
 
         if (getRoot()) {
-            binding.slot.setText("当前槽位：" + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", "未知"));
+            binding.slot.setText(getString(R.string.current_slot) + SystemPropertiesUtils.getProperty("ro.boot.slot_suffix", getString(R.string.unknown)));
             try {
                 if (Aonly) {
                     boot_a = getPartition("boot");
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
-                    binding.bootA.setText("boot分区：" + boot_a);
-                    binding.extractBootA.setText("导出boot");
-                    binding.writeBootA.setText("刷入boot");
+                    binding.bootA.setText(getString(R.string.boot_partition) + boot_a);
+                    binding.extractBootA.setText(getString(R.string.extract_boot));
+                    binding.writeBootA.setText(getString(R.string.write_boot));
                 } else {
                     boot_a = getPartition("boot_a");
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
-                    binding.bootA.setText("boot_a分区：" + boot_a);
+                    binding.bootA.setText(getString(R.string.boot_a_partition) + boot_a);
                 }
             } catch (Exception e) {
-                outputLog(Aonly ? "获取boot分区失败" : "获取boot_a分区失败");
+                outputLog(getString(R.string.get_partiton_failed, Aonly ? "boot" : "boot_a", e));
             }
 
             try {
                 if (!Aonly) {
                     boot_b = getPartition("boot_b");
                     boot_b = boot_b.substring(0, boot_b.length() - 1);
-                    binding.bootB.setText("boot_b分区：" + boot_b);
+                    binding.bootB.setText(getString(R.string.boot_b_partition) + boot_b);
                 } else {
                     binding.bootB.setVisibility(View.GONE);
                     binding.bootBOperate.setVisibility(View.GONE);
                 }
             } catch (Exception e) {
-                outputLog("获取boot_b分区失败");
+                outputLog(getString(R.string.get_partiton_failed, "boot_b", e));
             }
 
         } else {
             try {
-                Toast.makeText(getContext(), "未检测到root权限，请给予权限后重试", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), getString(R.string.no_root), Toast.LENGTH_LONG).show();
                 sleep(200);
                 System.exit(0);
             } catch (InterruptedException ignored) {
             }
         }
 
-        binding.extractBootA.setOnClickListener(view1 -> dumpImg(null, "boot_a"));
-        binding.extractBootB.setOnClickListener(view1 -> dumpImg(null, "boot_b"));
+        binding.extractBootA.setOnClickListener(view1 -> extractPartition(null, "boot_a"));
+        binding.extractBootB.setOnClickListener(view1 -> extractPartition(null, "boot_b"));
 
-        binding.writePartition.setOnClickListener(view1 -> new MaterialAlertDialogBuilder(getContext()).setTitle("确认").setMessage("您将要把\n" + imgPath + "\n刷入到\n" + targetPath + "\n请注意：此操作不可逆！").setPositiveButton("确定", (dialogInterface, i) -> {
+        binding.writePartition.setOnClickListener(view1 -> new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.warning)).setMessage(getString(R.string.write_confirm, sourcePath, targetPath)).setPositiveButton(getString(R.string.confirm), (dialogInterface, i) -> {
             binding.writePartition.setEnabled(false);
-            outputLog("开始刷写");
-            flashImg(imgPath, targetPath);
-        }).setNegativeButton("取消", (dialogInterface, i) -> {
-        }).show());
+            writePartition(sourcePath, targetPath);
+        }).setNegativeButton(getString(R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss()).show());
 
         binding.writeBootA.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
-            startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 1);
+            selectBootAPartitionFile.launch(intent);
         });
 
         binding.writeBootB.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
-            startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 2);
+            selectBootBPartitionFile.launch(intent);
         });
 
         binding.writeCustomPartition.setOnClickListener(view1 -> {
-            EditText CustomPartitionName = new EditText(getContext());
+            EditText CustomPartitionName = new EditText(requireContext());
             CustomPartitionName.setSingleLine();
-            CustomPartitionName.setHint("请填写分区名称");
+            CustomPartitionName.setHint(getString(R.string.input_partition_name_notice));
             CustomPartitionName.requestFocus();
             CustomPartitionName.setFocusable(true);
-            new MaterialAlertDialogBuilder(getContext()).setTitle("写入分区").setView(CustomPartitionName).setPositiveButton("确定", (dialog, which) -> {
+            new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.write_partition)).setView(CustomPartitionName).setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
                 String content = CustomPartitionName.getText().toString();
                 if (content.isBlank()) {
-                    Toast.makeText(getContext(), "请填写分区名称", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), getString(R.string.input_partition_name_notice), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
-                    targetPath = getPartition(CustomPartitionName.getText().toString());
+                    targetPath = getPartition(content);
                 } catch (Exception e) {
-                    outputLog("获取" + CustomPartitionName.getText().toString() + "分区失败：" + e);
+                    outputLog(getString(R.string.get_partiton_failed, content, e));
                     return;
                 }
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*/*");
-                startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 3);
-            }).setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss()).show();
+                selectCustomPartitionFile.launch(intent);
+            }).setNegativeButton(getString(R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss()).show();
         });
 
         binding.extractCustomPartition.setOnClickListener(view1 -> {
-            EditText CustomPartitionName = new EditText(getContext());
+            EditText CustomPartitionName = new EditText(requireContext());
             CustomPartitionName.setSingleLine();
-            CustomPartitionName.setHint("请填写分区名称");
+            CustomPartitionName.setHint(getString(R.string.input_partition_name_notice));
             CustomPartitionName.requestFocus();
             CustomPartitionName.setFocusable(true);
-            new MaterialAlertDialogBuilder(getContext()).setTitle("导出分区").setView(CustomPartitionName).setPositiveButton("确定", (dialog, which) -> {
+            new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.extract_partition)).setView(CustomPartitionName).setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
                 String content = CustomPartitionName.getText().toString();
                 if (content.isBlank()) {
-                    Toast.makeText(getContext(), "请填写分区名称", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), getString(R.string.input_partition_name_notice), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
-                    dumpImg(CustomPartitionName.getText().toString(), getPartition(CustomPartitionName.getText().toString()));
+                    extractPartition(CustomPartitionName.getText().toString(), getPartition(CustomPartitionName.getText().toString()));
                 } catch (Exception e) {
-                    outputLog("获取" + CustomPartitionName.getText().toString() + "分区失败：" + e);
+                    outputLog(getString(R.string.get_partiton_failed, content, e));
                 }
-            }).setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss()).show();
+            }).setNegativeButton(getString(R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss()).show();
         });
 
         binding.confirmWriteCustomPartition.setOnClickListener(view1 -> {
@@ -209,14 +214,7 @@ public class FirstFragment extends Fragment {
             binding.showWriteCustomPartition.setVisibility(View.VISIBLE);
         });
 
-        binding.listAllPartitions.setOnClickListener(view1 -> {
-            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getContext());
-            alertDialogBuilder.setCancelable(false);
-            alertDialogBuilder.setTitle("检索分区列表");
-            alertDialogBuilder.setMessage("请等待...");
-            AlertDialog dialog = alertDialogBuilder.show();
-            showPartitionList(dialog);
-        });
+        binding.listAllPartitions.setOnClickListener(view1 -> showPartitionList(new MaterialAlertDialogBuilder(requireContext()).setCancelable(false).setTitle(getString(R.string.get_partitions_list)).setMessage(getString(R.string.waiting)).show()));
     }
 
     /*
@@ -224,85 +222,81 @@ public class FirstFragment extends Fragment {
      * */
     private void showPartitionList(AlertDialog dialog) {
         PartitionUtil.performIOOperationAsync(partitions -> {
-            if (partitions.isEmpty()) {
-                outputLog("获取分区列表失败");
+            if (partitions.isBlank()) {
+                outputLog(getString(R.string.get_partitons_list_failed));
                 dialog.dismiss();
                 return Unit.INSTANCE;
             }
 
-            outputLog("分区列表:\n" + partitions);
+            outputLog(getString(R.string.partitions_list, partitions));
 
             dialog.dismiss();
             return Unit.INSTANCE;
         });
     }
 
-    String imgPath;
-    String targetPath;
+    ActivityResultLauncher<Intent> selectBootAPartitionFile = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> fileSelectResult(result, boot_a));
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            try {
-                if (requestCode == 1) {
-                    imgPath = FileUtil.getPath(getContext(), data.getData());
-                    targetPath = boot_a;
-                } else if (requestCode == 2) {
-                    imgPath = FileUtil.getPath(getContext(), data.getData());
-                    targetPath = boot_b;
-                } else if (requestCode == 3) {
-                    imgPath = FileUtil.getPath(getContext(), data.getData());
+    ActivityResultLauncher<Intent> selectBootBPartitionFile = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> fileSelectResult(result, boot_b));
+
+    ActivityResultLauncher<Intent> selectCustomPartitionFile = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> fileSelectResult(result, targetPath));
+
+    private void fileSelectResult(ActivityResult result, String target) {
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            Intent data = result.getData();
+            if (data != null) {
+                try {
+                    sourcePath = FileUtil.getPath(requireContext(), data.getData());
+                    targetPath = target;
+                } catch (Exception e) {
+                    outputLog(getString(R.string.unknown_error) + e);
                 }
-            } catch (Exception e) {
-                outputLog("获取路径失败 " + e);
             }
-
-            if (imgPath.contains("/")) {
+            if (sourcePath != null && sourcePath.contains("/")) {
                 binding.writePartition.setEnabled(true);
-                binding.sourceFile.setText("源：" + imgPath);
-                binding.targetPartition.setText("目标：" + targetPath);
-                outputLog(imgPath + " -> " + targetPath);
+                binding.sourceFile.setText(getString(R.string.source_file, sourcePath));
+                binding.targetPartition.setText(getString(R.string.target_partition, targetPath));
+                outputLog(sourcePath + " -> " + targetPath);
             } else {
-                new MaterialAlertDialogBuilder(getContext()).setTitle("没有正确获取到文件的路径").setMessage("这可能是您选择了一个已经被删除的文件\n这似乎是Android文件选择器的Bug，您可以在选择时点击左上角使用其他文件选择器来选择\n一般情况下，重启手机会刷新Android文件选择器的缓存").setPositiveButton("确定", null).show();
+                new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.path_error)).setMessage(getString(R.string.path_error_detail)).setPositiveButton(getString(R.string.confirm), (dialogInterface, i) -> dialogInterface.dismiss()).show();
             }
         }
-
     }
 
-    public void dumpImg(String Name, String Partition) {
+    public void extractPartition(String Name, String Partition) {
         try {
-            String date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            String date = new SimpleDateFormat("yyyyMMddHHmmss", Locale.CHINA).format(new Date());
             if (Objects.equals(Partition, "boot_a")) {
                 exeCmd("blockdev --setrw " + boot_a, false);
                 if (Aonly) {
                     exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
-                    outputLog("导出到/Download/boot_" + date + ".img");
+                    outputLog(getString(R.string.extract_to, "/Download/boot_" + date + ".img"));
                 } else {
                     exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
-                    outputLog("导出到/Download/boot_a_" + date + ".img");
+                    outputLog(getString(R.string.extract_to, "/Download/boot_a_" + date + ".img"));
                 }
             } else if (Objects.equals(Partition, "boot_b")) {
                 exeCmd("blockdev --setrw " + boot_b, false);
                 exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
-                outputLog("导出到/Download/boot_b_" + date + ".img");
+                outputLog(getString(R.string.extract_to, "/Download/boot_b_" + date + ".img"));
             } else {
                 exeCmd("blockdev --setrw " + Partition, false);
                 exeCmd("dd if=" + Partition + " of=" + "/storage/emulated/0/Download/" + Name + "_" + date + ".img bs=4M;sync", true);
-                outputLog("导出到/Download/" + Name + "_" + date + ".img");
+                outputLog(getString(R.string.extract_to, "/Download/" + Name + "_" + date + ".img"));
             }
         } catch (Exception e) {
-            outputLog("导出失败 " + e);
+            outputLog(getString(R.string.extract_failed, e.toString()));
         }
     }
 
-    public void flashImg(String imgPath, String targetPath) {
+    public void writePartition(String imgPath, String targetPath) {
         try {
             exeCmd("blockdev --setrw " + targetPath, false);
             exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
-            binding.sourceFile.setText("源：未选择");
-            binding.targetPartition.setText("目标：未选择");
+            binding.sourceFile.setText(getString(R.string.source_file, getString(R.string.not_selected)));
+            binding.targetPartition.setText(getString(R.string.target_partition, getString(R.string.not_selected)));
         } catch (Exception e) {
-            outputLog("刷入失败 " + e);
+            outputLog(getString(R.string.write_failed, e.toString()));
         }
     }
 
@@ -325,7 +319,7 @@ public class FirstFragment extends Fragment {
     public String getPartition(String partitionName) throws Exception {
         String res = exeCmd("readlink -f /dev/block/by-name/" + partitionName, false);
         if (!res.contains("by-name")) return res;
-        throw new Exception("无法获取正确的分区路径");
+        throw new Exception(getString(R.string.real_link_error));
     }
 
     public String exeCmd(String command, boolean log) throws InterruptedException, ExecutionException {
@@ -335,19 +329,13 @@ public class FirstFragment extends Fragment {
             Process process = null;
             try {
                 process = Runtime.getRuntime().exec("su -c " + command);
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        new SequenceInputStream(process.getInputStream(), process.getErrorStream()),
-                        StandardCharsets.UTF_8));
+                BufferedReader br = new BufferedReader(new InputStreamReader(new SequenceInputStream(process.getInputStream(), process.getErrorStream()), StandardCharsets.UTF_8));
                 String line;
                 while ((line = br.readLine()) != null) {
                     if (log) {
                         outputLog(line);
                     }
                     sb.append(line).append("\n");
-                    if (progressDialog != null && progressDialog.isShowing()) {
-                        int progress = Math.min(progressDialog.getProgress() + 10, 100);
-                        progressDialog.setProgress(progress);
-                    }
                 }
                 int exitCode = process.waitFor();
                 if (exitCode != 0) {
@@ -358,10 +346,9 @@ public class FirstFragment extends Fragment {
                 if (process != null) {
                     process.destroy();
                 }
-                throw new RuntimeException("Error executing command: " + command, e);
+                throw new RuntimeException("未知错误: " + command, e);
             } finally {
-                if (progressDialog != null && progressDialog.isShowing()) progressDialog.dismiss();
-                if (log) outputLog("完成");
+                if (log) outputLog(getString(R.string.complete));
             }
             return sb.toString();
         });

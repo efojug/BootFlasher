@@ -141,12 +141,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
-        android:layout_marginTop="8dp"
         android:layout_marginStart="18dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="5dp"
         android:enabled="false"
-        android:text="@string/write_partition"
+        android:text="@string/run"
         app:icon="@android:drawable/ic_menu_send" />
 
     <Button
@@ -154,32 +154,35 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/confirm_write_custom_partition"/>
+        android:text="@string/confirm_write_custom_partition" />
 
     <LinearLayout
         android:id="@+id/show_write_custom_partition"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" >
+        android:layout_gravity="start"
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <Button
             android:id="@+id/extract_custom_partition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
             android:text="@string/extract_custom_partition" />
 
         <Button
             android:id="@+id/list_all_partitions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="列出所有分区"/>
+            android:layout_marginStart="20dp"
+            android:text="@string/list_all_partitions" />
 
         <Button
             android:id="@+id/write_custom_partition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="20dp"
             android:text="@string/write_custom_partition" />
 
     </LinearLayout>
@@ -196,9 +199,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="5dp"
         android:text="@string/logs"
-        android:textSize="16sp"
-        android:layout_marginTop="5dp"/>
+        android:textSize="16sp" />
 
     <ScrollView
         android:id="@+id/log_scrollview"
@@ -209,7 +212,7 @@
             android:id="@+id/log"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textIsSelectable="true"/>
+            android:textIsSelectable="true" />
 
     </ScrollView>
 </LinearLayout>
