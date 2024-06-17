@@ -72,8 +72,8 @@ public class FirstFragment extends Fragment {
         if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", "false"), "true")) {
             binding.aonlyWarning.setVisibility(View.VISIBLE);
             binding.slot.setVisibility(View.GONE);
-            binding.bootbDump.setEnabled(false);
-            binding.bootbFlash.setEnabled(false);
+            binding.extractBootB.setEnabled(false);
+            binding.writeBootB.setEnabled(false);
             Aonly = true;
         }
 
@@ -81,18 +81,18 @@ public class FirstFragment extends Fragment {
             binding.notUnlockBootloader.setVisibility(View.VISIBLE);
             binding.blNotice.setVisibility(View.VISIBLE);
             binding.unlock.setVisibility(View.VISIBLE);
-            binding.bootaFlash.setEnabled(false);
-            binding.bootbFlash.setEnabled(false);
-            binding.flashCustomPartition.setEnabled(false);
+            binding.writeBootA.setEnabled(false);
+            binding.writeBootB.setEnabled(false);
+            binding.writeCustomPartition.setEnabled(false);
         }
 
         binding.unlock.setOnClickListener(v -> new MaterialAlertDialogBuilder(getContext()).setTitle("注意").setMessage("这只适用于一些使用Magisk作为Root权限管理器时，Magisk可能会自动伪装BootLoader解锁状态\n您已经被警告过了").setPositiveButton("确定", (dialogInterface, i) -> {
             binding.unlock.setEnabled(false);
             binding.unlock.setVisibility(View.GONE);
             binding.blNotice.setVisibility(View.GONE);
-            binding.bootaFlash.setEnabled(true);
-            binding.bootbFlash.setEnabled(true);
-            binding.flashCustomPartition.setEnabled(true);
+            binding.writeBootA.setEnabled(true);
+            binding.writeBootB.setEnabled(true);
+            binding.writeCustomPartition.setEnabled(true);
             outputLog("已解锁受限功能");
 
         }).setNegativeButton("我没有解锁Bootloader", (dialogInterface, i) -> {
@@ -105,8 +105,8 @@ public class FirstFragment extends Fragment {
                     boot_a = getPartition("boot");
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText("boot分区：" + boot_a);
-                    binding.bootaDump.setText("导出boot");
-                    binding.bootaFlash.setText("刷入boot");
+                    binding.extractBootA.setText("导出boot");
+                    binding.writeBootA.setText("刷入boot");
                 } else {
                     boot_a = getPartition("boot_a");
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
@@ -138,29 +138,29 @@ public class FirstFragment extends Fragment {
             }
         }
 
-        binding.bootaDump.setOnClickListener(view1 -> dumpImg(null, "boot_a"));
-        binding.bootbDump.setOnClickListener(view1 -> dumpImg(null, "boot_b"));
+        binding.extractBootA.setOnClickListener(view1 -> dumpImg(null, "boot_a"));
+        binding.extractBootB.setOnClickListener(view1 -> dumpImg(null, "boot_b"));
 
-        binding.flash.setOnClickListener(view1 -> new MaterialAlertDialogBuilder(getContext()).setTitle("确认").setMessage("您将要把\n" + imgPath + "\n刷入到\n" + targetPath + "\n请注意：此操作不可逆！").setPositiveButton("确定", (dialogInterface, i) -> {
-            binding.flash.setEnabled(false);
+        binding.writePartition.setOnClickListener(view1 -> new MaterialAlertDialogBuilder(getContext()).setTitle("确认").setMessage("您将要把\n" + imgPath + "\n刷入到\n" + targetPath + "\n请注意：此操作不可逆！").setPositiveButton("确定", (dialogInterface, i) -> {
+            binding.writePartition.setEnabled(false);
             outputLog("开始刷写");
             flashImg(imgPath, targetPath);
         }).setNegativeButton("取消", (dialogInterface, i) -> {
         }).show());
 
-        binding.bootaFlash.setOnClickListener(view1 -> {
+        binding.writeBootA.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
             startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 1);
         });
 
-        binding.bootbFlash.setOnClickListener(view1 -> {
+        binding.writeBootB.setOnClickListener(view1 -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
             startActivityForResult(Intent.createChooser(intent, "选择镜像文件"), 2);
         });
 
-        binding.flashCustomPartition.setOnClickListener(view1 -> {
+        binding.writeCustomPartition.setOnClickListener(view1 -> {
             EditText CustomPartitionName = new EditText(getContext());
             CustomPartitionName.setSingleLine();
             CustomPartitionName.setHint("请填写分区名称");
@@ -184,7 +184,7 @@ public class FirstFragment extends Fragment {
             }).setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss()).show();
         });
 
-        binding.dumpCustomPartition.setOnClickListener(view1 -> {
+        binding.extractCustomPartition.setOnClickListener(view1 -> {
             EditText CustomPartitionName = new EditText(getContext());
             CustomPartitionName.setSingleLine();
             CustomPartitionName.setHint("请填写分区名称");
@@ -204,9 +204,9 @@ public class FirstFragment extends Fragment {
             }).setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss()).show();
         });
 
-        binding.confirmFlashCustomPartition.setOnClickListener(view1 -> {
-            binding.confirmFlashCustomPartition.setVisibility(View.GONE);
-            binding.showFlashCustomPartition.setVisibility(View.VISIBLE);
+        binding.confirmWriteCustomPartition.setOnClickListener(view1 -> {
+            binding.confirmWriteCustomPartition.setVisibility(View.GONE);
+            binding.showWriteCustomPartition.setVisibility(View.VISIBLE);
         });
 
         binding.listAllPartitions.setOnClickListener(view1 -> {
@@ -258,9 +258,9 @@ public class FirstFragment extends Fragment {
             }
 
             if (imgPath.contains("/")) {
-                binding.flash.setEnabled(true);
-                binding.source.setText("源：" + imgPath);
-                binding.target.setText("目标：" + targetPath);
+                binding.writePartition.setEnabled(true);
+                binding.sourceFile.setText("源：" + imgPath);
+                binding.targetPartition.setText("目标：" + targetPath);
                 outputLog(imgPath + " -> " + targetPath);
             } else {
                 new MaterialAlertDialogBuilder(getContext()).setTitle("没有正确获取到文件的路径").setMessage("这可能是您选择了一个已经被删除的文件\n这似乎是Android文件选择器的Bug，您可以在选择时点击左上角使用其他文件选择器来选择\n一般情况下，重启手机会刷新Android文件选择器的缓存").setPositiveButton("确定", null).show();
@@ -299,8 +299,8 @@ public class FirstFragment extends Fragment {
         try {
             exeCmd("blockdev --setrw " + targetPath, false);
             exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
-            binding.source.setText("源：未选择");
-            binding.target.setText("目标：未选择");
+            binding.sourceFile.setText("源：未选择");
+            binding.targetPartition.setText("目标：未选择");
         } catch (Exception e) {
             outputLog("刷入失败 " + e);
         }

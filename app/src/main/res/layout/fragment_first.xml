@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
         android:layout_marginStart="18dp"
-        android:text="您的手机分区类型为Aonly，\n使用本工具可能导致未知错误!"
+        android:text="@string/aonly_warn"
         android:textColor="#D81B60"
         android:textSize="20sp"
         android:visibility="gone" />
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
         android:layout_marginStart="18dp"
-        android:text="检测到未解锁Bootloader!"
+        android:text="@string/bootloader_warn"
         android:textColor="#D81B60"
         android:textSize="24sp"
         android:visibility="gone" />
@@ -38,7 +38,7 @@
         android:layout_gravity="start|top"
         android:layout_marginStart="18dp"
         android:layout_marginTop="2dp"
-        android:text="注意：在未解锁Bootloader的手机上修改分区会导致无法开机"
+        android:text="@string/bootloader_warn_details"
         android:textColor="#D81B60"
         android:visibility="gone" />
 
@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
         android:layout_marginStart="18dp"
-        android:text="我已解锁Bootloader"
+        android:text="@string/unlocked_bootloader"
         android:visibility="gone" />
 
     <TextView
@@ -75,18 +75,18 @@
         android:layout_marginTop="3dp">
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/boota_dump"
+            android:id="@+id/extract_boot_a"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="导出boot_a" />
+            android:text="@string/extract_boot_a" />
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/boota_flash"
+            android:id="@+id/write_boot_a"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="刷入boot_a" />
+            android:text="@string/write_boot_a" />
 
     </LinearLayout>
 
@@ -106,38 +106,38 @@
         android:layout_marginTop="3dp">
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/bootb_dump"
+            android:id="@+id/extract_boot_b"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="导出boot_b" />
+            android:text="@string/extract_boot_b" />
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/bootb_flash"
+            android:id="@+id/write_boot_b"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="刷入boot_b" />
+            android:text="@string/write_boot_b" />
 
     </LinearLayout>
 
     <TextView
-        android:id="@+id/source"
+        android:id="@+id/source_file"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="8dp"
-        android:text="源：未选择" />
+        android:text="@string/source_file" />
 
     <TextView
-        android:id="@+id/target"
+        android:id="@+id/target_partition"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:text="目标：未选择" />
+        android:text="@string/target_partition" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/flash"
+        android:id="@+id/write_partition"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
@@ -146,41 +146,41 @@
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="5dp"
         android:enabled="false"
-        android:text="执行"
+        android:text="@string/write_partition"
         app:icon="@android:drawable/ic_menu_send" />
 
     <Button
-        android:id="@+id/confirmFlashCustomPartition"
+        android:id="@+id/confirm_write_custom_partition"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="我希望刷写其他分区\n我已了解这可能造成无法挽回的后果"/>
+        android:text="@string/confirm_write_custom_partition"/>
 
     <LinearLayout
-        android:id="@+id/showFlashCustomPartition"
+        android:id="@+id/show_write_custom_partition"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone" >
 
         <Button
-            android:id="@+id/dumpCustomPartition"
+            android:id="@+id/extract_custom_partition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="导出自定义分区" />
+            android:text="@string/extract_custom_partition" />
 
         <Button
-            android:id="@+id/listAllPartitions"
+            android:id="@+id/list_all_partitions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="列出所有分区"/>
 
         <Button
-            android:id="@+id/flashCustomPartition"
+            android:id="@+id/write_custom_partition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:text="刷入自定义分区" />
+            android:text="@string/write_custom_partition" />
 
     </LinearLayout>
 
@@ -189,14 +189,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:autoLink="web"
-        android:text="作者: efojug Github: github.com/efojug/BootFlasher"
+        android:text="@string/author_info"
         android:textSize="12sp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="程序日志"
+        android:text="@string/logs"
         android:textSize="16sp"
         android:layout_marginTop="5dp"/>
 

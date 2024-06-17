@@ -5,5 +5,21 @@
     <string name="fragment_label">刷入或导出img文件</string>
     <string name="refresh">刷新</string>
     <string name="previous">返回</string>
+    <string name="aonly_warn">您的手机分区类型为Aonly，\n使用本工具可能导致未知错误!</string>
+    <string name="bootloader_warn">检测到未解锁Bootloader!</string>
+    <string name="bootloader_warn_details">注意：在未解锁Bootloader的手机上修改分区会导致无法开机</string>
+    <string name="unlocked_bootloader">我已解锁Bootloader</string>
+    <string name="extract_boot_a">导出boot_a</string>
+    <string name="write_boot_a">刷入boot_a</string>
+    <string name="extract_boot_b">导出boot_b</string>
+    <string name="write_boot_b">刷入boot_b</string>
+    <string name="target_partition">目标：未选择</string>
+    <string name="write_partition">执行</string>
+    <string name="confirm_write_custom_partition">我希望刷写其他分区\n我已了解这可能造成无法挽回的后果</string>
+    <string name="extract_custom_partition">导出自定义分区</string>
+    <string name="write_custom_partition">刷入自定义分区</string>
+    <string name="author_info">作者: efojug Github: github.com/efojug/BootFlasher</string>
+    <string name="logs">程序日志</string>
+    <string name="source_file">源：未选择</string>
 
 </resources>
