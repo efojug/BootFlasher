@@ -21,7 +21,7 @@ object PartitionUtil {
     private suspend fun getPartitionsList(): List<String> {
         val partitions = mutableListOf<String>()
 
-        CmdUtil.execute(cmd = "su -c ls -l /dev/block/by-name | cut -d ' ' -f 8-", onInfo = {
+        CmdUtil.execute(cmd = "su -c find /dev/block/by-name/* -type l -print0 | xargs -0 sh -c 'for arg; do echo \"\$(basename \"\$arg\") -> \$(readlink -f \"\$arg\")\"; done'", onInfo = {
             partitions.add(it)
         })
 

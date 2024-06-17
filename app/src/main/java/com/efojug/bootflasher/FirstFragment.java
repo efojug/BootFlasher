@@ -231,9 +231,7 @@ public class FirstFragment extends Fragment {
             }
 
             outputLog("分区列表:\n");
-            for (String partition : partitions) {
-                outputLog(partition + "\n");
-            }
+            outputLog(partitions.toString());
 
             dialog.dismiss();
             return Unit.INSTANCE;
