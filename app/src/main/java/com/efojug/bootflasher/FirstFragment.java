@@ -68,7 +68,7 @@ public class FirstFragment extends Fragment {
         StringBuilder tmp = new StringBuilder();
         for (int i = 0; i < logs.size(); i++) tmp.append(logs.get(i));
         binding.log.post(() -> binding.log.setText(tmp.toString()));
-        binding.logScrollview.post(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN));
+        binding.logScrollview.postDelayed(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN), 100);
     }
 
     @SuppressLint("SetTextI18n")
