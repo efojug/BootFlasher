@@ -58,7 +58,7 @@ public class FirstFragment extends Fragment {
     Vector<String> logs = new Vector<>();
 
     public void outputLog(String log) {
-        if (logs.size() > 5) logs.remove(0);
+        if (logs.size() > 100) logs.remove(0);
         logs.add(new SimpleDateFormat("HH:mm:ss").format(new Date()) + "> " + log + "\n");
         StringBuilder tmp = new StringBuilder();
         for (int i = 0; i < logs.size(); i++) tmp.append(logs.get(i));
@@ -69,7 +69,7 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", ""), "true")) {
+        if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", "false"), "true")) {
             binding.aonlyWarning.setVisibility(View.VISIBLE);
             binding.slot.setVisibility(View.GONE);
             binding.bootbDump.setEnabled(false);
