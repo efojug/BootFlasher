@@ -45,7 +45,7 @@
     <string name="write_confirm">You will write\n%s\nto\n%s\nWarning：this operation is irreversible！</string>
     <string name="cancel">Cancel</string>
     <string name="extract_to">Extracted to：%s</string>
-    <string name="unknown_error">Unknown Error</string>
+    <string name="unknown_error">Unknown Error：%s</string>
     <string name="get_partitions_list">Get partitions list</string>
     <string name="waiting">Please wait...</string>
     <string name="get_partitons_list_failed">Get partitions list failed</string>

@@ -339,14 +339,14 @@ public class FirstFragment extends Fragment {
                 }
                 int exitCode = process.waitFor();
                 if (exitCode != 0) {
-                    throw new IOException("发生运行时错误：" + exitCode);
+                    throw new Exception(getString(R.string.unknown_error, "exitCode: " + exitCode));
                 }
                 br.close();
             } catch (IOException | InterruptedException e) {
                 if (process != null) {
                     process.destroy();
                 }
-                throw new RuntimeException("未知错误: " + command, e);
+                throw new RuntimeException(getString(R.string.unknown_error, e));
             } finally {
                 if (log) outputLog(getString(R.string.complete));
             }
