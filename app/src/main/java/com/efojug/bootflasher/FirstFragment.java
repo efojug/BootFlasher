@@ -63,7 +63,7 @@ public class FirstFragment extends Fragment {
     Vector<String> logs = new Vector<>();
 
     public void outputLog(String log) {
-        if (logs.size() > 20) logs.remove(0);
+        if (logs.size() > 50) logs.remove(0);
         logs.add(new SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(new Date()) + "> " + log + "\n");
         StringBuilder tmp = new StringBuilder();
         for (int i = 0; i < logs.size(); i++) tmp.append(logs.get(i));
@@ -112,12 +112,12 @@ public class FirstFragment extends Fragment {
                     boot_a = getPartition("boot");
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText(getString(R.string.boot_partition) + boot_a);
-                    binding.extractBootA.setText(getString(R.string.extract_boot));
+                    binding.extractBootA.setText(getString(R.string.dump_boot));
                     binding.writeBootA.setText(getString(R.string.write_boot));
                 } else {
                     boot_a = getPartition("boot_a");
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
-                    binding.bootA.setText(getString(R.string.boot_a_partition) + boot_a);
+                    binding.bootA.setText(getString(R.string.boot_a_path) + boot_a);
                 }
             } catch (Exception e) {
                 outputLog(getString(R.string.get_partiton_failed, Aonly ? "boot" : "boot_a", e));
@@ -127,7 +127,7 @@ public class FirstFragment extends Fragment {
                 if (!Aonly) {
                     boot_b = getPartition("boot_b");
                     boot_b = boot_b.substring(0, boot_b.length() - 1);
-                    binding.bootB.setText(getString(R.string.boot_b_partition) + boot_b);
+                    binding.bootB.setText(getString(R.string.boot_b_path) + boot_b);
                 } else {
                     binding.bootB.setVisibility(View.GONE);
                     binding.bootBOperate.setVisibility(View.GONE);
@@ -137,16 +137,13 @@ public class FirstFragment extends Fragment {
             }
 
         } else {
-            try {
-                Toast.makeText(requireContext(), getString(R.string.no_root), Toast.LENGTH_LONG).show();
-                sleep(200);
-                System.exit(0);
-            } catch (InterruptedException ignored) {
-            }
+            Toast.makeText(requireContext(), getString(R.string.no_root), Toast.LENGTH_LONG).show();
+            System.setSecurityManager(new SecurityManager());
+            Runtime.getRuntime().halt(1);
         }
 
-        binding.extractBootA.setOnClickListener(view1 -> extractPartition(null, "boot_a"));
-        binding.extractBootB.setOnClickListener(view1 -> extractPartition(null, "boot_b"));
+        binding.extractBootA.setOnClickListener(view1 -> dumpPartition(null, "boot_a"));
+        binding.extractBootB.setOnClickListener(view1 -> dumpPartition(null, "boot_b"));
 
         binding.writePartition.setOnClickListener(view1 -> new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.warning)).setMessage(getString(R.string.write_confirm, sourcePath, targetPath)).setPositiveButton(getString(R.string.confirm), (dialogInterface, i) -> {
             binding.writePartition.setEnabled(false);
@@ -189,20 +186,20 @@ public class FirstFragment extends Fragment {
             }).setNegativeButton(getString(R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss()).show();
         });
 
-        binding.extractCustomPartition.setOnClickListener(view1 -> {
+        binding.dumpCustomPartition.setOnClickListener(view1 -> {
             EditText CustomPartitionName = new EditText(requireContext());
             CustomPartitionName.setSingleLine();
             CustomPartitionName.setHint(getString(R.string.input_partition_name_notice));
             CustomPartitionName.requestFocus();
             CustomPartitionName.setFocusable(true);
-            new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.extract_partition)).setView(CustomPartitionName).setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+            new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.dump_partition)).setView(CustomPartitionName).setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
                 String content = CustomPartitionName.getText().toString();
                 if (content.isBlank()) {
                     Toast.makeText(requireContext(), getString(R.string.input_partition_name_notice), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
-                    extractPartition(CustomPartitionName.getText().toString(), getPartition(CustomPartitionName.getText().toString()));
+                    dumpPartition(CustomPartitionName.getText().toString(), getPartition(CustomPartitionName.getText().toString()));
                 } catch (Exception e) {
                     outputLog(getString(R.string.get_partiton_failed, content, e));
                 }
@@ -263,36 +260,42 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public void extractPartition(String Name, String Partition) {
+    public void setPartitionRW(String PartitionName, boolean OutputLog) throws ExecutionException, InterruptedException {
+        exeCmd("blockdev --setrw " + PartitionName, OutputLog);
+    }
+
+    String defaultSaveDir = "/storage/emulated/0/Download/";
+    String PartitionCopyCmd = "dd if=%s of=%s.img bs=4M;sync";
+    String date = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(new Date());
+
+    public void dumpPartition(String name, String partition) {
         try {
-            String date = new SimpleDateFormat("yyyyMMddHHmmss", Locale.CHINA).format(new Date());
-            if (Objects.equals(Partition, "boot_a")) {
-                exeCmd("blockdev --setrw " + boot_a, false);
-                if (Aonly) {
-                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_" + date + ".img bs=4M;sync", true);
-                    outputLog(getString(R.string.extract_to, "/Download/boot_" + date + ".img"));
-                } else {
-                    exeCmd("dd if=" + boot_a + " of=" + "/storage/emulated/0/Download/boot_a_" + date + ".img bs=4M;sync", true);
-                    outputLog(getString(R.string.extract_to, "/Download/boot_a_" + date + ".img"));
-                }
-            } else if (Objects.equals(Partition, "boot_b")) {
-                exeCmd("blockdev --setrw " + boot_b, false);
-                exeCmd("dd if=" + boot_b + " of=" + "/storage/emulated/0/Download/boot_b_" + date + ".img bs=4M;sync", true);
-                outputLog(getString(R.string.extract_to, "/Download/boot_b_" + date + ".img"));
-            } else {
-                exeCmd("blockdev --setrw " + Partition, false);
-                exeCmd("dd if=" + Partition + " of=" + "/storage/emulated/0/Download/" + Name + "_" + date + ".img bs=4M;sync", true);
-                outputLog(getString(R.string.extract_to, "/Download/" + Name + "_" + date + ".img"));
+            switch (partition) {
+                case "boot_a":
+                    setPartitionRW(boot_a, false);
+                    exeCmd(String.format(PartitionCopyCmd, boot_a, defaultSaveDir + (Aonly ? "boot_" : "boot_a_") + date), true);
+                    outputLog(getString(R.string.extract_to, "/Download/" + (Aonly ? "boot_" : "boot_a_") + date + ".img"));
+                    break;
+                case "boot_b":
+                    setPartitionRW(boot_b, false);
+                    exeCmd(String.format(PartitionCopyCmd, boot_b, defaultSaveDir, "boot_b_" + date), true);
+                    outputLog(getString(R.string.extract_to, "/Download/boot_b_" + date + ".img"));
+                    break;
+                default:
+                    setPartitionRW(partition, false);
+                    exeCmd(String.format(PartitionCopyCmd, partition, defaultSaveDir, name + "_" + date), true);
+                    outputLog(getString(R.string.extract_to, "/Download/" + name + "_" + date + ".img"));
+                    break;
             }
         } catch (Exception e) {
-            outputLog(getString(R.string.extract_failed, e.toString()));
+            outputLog(getString(R.string.dump_failed, e.toString()));
         }
     }
 
     public void writePartition(String imgPath, String targetPath) {
         try {
-            exeCmd("blockdev --setrw " + targetPath, false);
-            exeCmd("dd if=" + imgPath + " of=" + targetPath + " bs=4M;sync", true);
+            setPartitionRW(targetPath, false);
+            exeCmd(String.format(PartitionCopyCmd, imgPath, targetPath), true);
             binding.sourceFile.setText(getString(R.string.source_file, getString(R.string.not_selected)));
             binding.targetPartition.setText(getString(R.string.target_partition, getString(R.string.not_selected)));
         } catch (Exception e) {

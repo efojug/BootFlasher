@@ -1,5 +1,7 @@
 package com.efojug.bootflasher.utils;
 
+import android.annotation.SuppressLint;
+
 import java.lang.reflect.Method;
 
 public final class SystemPropertiesUtils {
@@ -7,11 +9,10 @@ public final class SystemPropertiesUtils {
     public static String getProperty(String key, String defaultValue) {
         String value = defaultValue;
         try{
-            Class<?> c = Class.forName(CLASS_NAME);
+            @SuppressLint("PrivateApi") Class<?> c = Class.forName(CLASS_NAME);
             Method get = c.getMethod("get", String.class, String.class);
             value = (String) (get.invoke(c, key, defaultValue));
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
         return value;
     }

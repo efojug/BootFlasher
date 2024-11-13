@@ -8,14 +8,14 @@
     <string name="bootloader_warn">检测到未解锁Bootloader!</string>
     <string name="bootloader_warn_details">注意：在未解锁Bootloader的设备上修改分区会导致无法开机</string>
     <string name="unlocked_bootloader">我已解锁Bootloader</string>
-    <string name="extract_boot_a">导出boot_a</string>
+    <string name="dump_boot_a">导出boot_a</string>
     <string name="write_boot_a">刷入boot_a</string>
-    <string name="extract_boot_b">导出boot_b</string>
+    <string name="dump_boot_b">导出boot_b</string>
     <string name="write_boot_b">刷入boot_b</string>
     <string name="target_partition">目标：%s</string>
     <string name="run">执行</string>
     <string name="confirm_write_custom_partition">我希望刷写其他分区\n我已了解这可能造成无法挽回的后果</string>
-    <string name="extract_custom_partition">导出自定义分区</string>
+    <string name="dump_custom_partition">导出自定义分区</string>
     <string name="write_custom_partition">刷入自定义分区</string>
     <string name="author_info">作者: efojug Github: github.com/efojug/BootFlasher</string>
     <string name="logs">程序日志</string>
@@ -23,16 +23,16 @@
     <string name="current_slot">当前槽位：</string>
     <string name="unknown">未知</string>
     <string name="boot_partition">boot分区：</string>
-    <string name="extract_boot">导出boot</string>
+    <string name="dump_boot">导出boot</string>
     <string name="write_boot">刷入boot</string>
-    <string name="boot_a_partition">boot_a分区：</string>
-    <string name="boot_b_partition">boot_b分区：</string>
+    <string name="boot_a_path">boot_a分区：</string>
+    <string name="boot_b_path">boot_b分区：</string>
     <string name="get_partiton_failed">获取 %s 分区失败：%2$s</string>
     <string name="no_root">没有root权限，请给予权限后重试</string>
     <string name="select_partition_file">选择分区文件</string>
     <string name="input_partition_name_notice">请填写分区名称</string>
     <string name="write_partition">写入分区</string>
-    <string name="extract_partition">导出分区</string>
+    <string name="dump_partition">导出分区</string>
     <string name="warning">警告</string>
     <string name="enable_warn">这只适用于一些使用Magisk作为Root权限管理器时，Magisk可能会自动伪装BootLoader解锁状态\n您已经被警告过了</string>
     <string name="confirm">确定</string>
@@ -50,7 +50,7 @@
     <string name="waiting">请等待...</string>
     <string name="get_partitons_list_failed">获取分区列表失败</string>
     <string name="partitions_list">分区列表：\n%s</string>
-    <string name="extract_failed">导出失败：%s</string>
+    <string name="dump_failed">导出失败：%s</string>
     <string name="restrict_feature_unlocked">已解锁受限功能</string>
     <string name="list_all_partitions">列出所有分区</string>
 </resources>

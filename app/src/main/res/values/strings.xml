@@ -1,21 +1,21 @@
 <resources>
     <string name="app_name">BootFlasher</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="fragment_label">Write or Extract Partitions File</string>
+    <string name="fragment_label">Write or Dump Partitions File</string>
     <string name="refresh">Refresh</string>
     <string name="previous">Previous</string>
-    <string name="aonly_warn">Your devices paritions type is A-only，\nUse this tool maybe cause unknown issues!</string>
+    <string name="aonly_warn">Your devices partitions type is A-only，\nUse this tool maybe cause unknown issues!</string>
     <string name="bootloader_warn">Detected Bootloader is not unlocked!</string>
     <string name="bootloader_warn_details">Warning：Modification of partitions on a device with an unlocked bootloader will cause the device to fail to boot</string>
     <string name="unlocked_bootloader">I already unlocked the Bootloader</string>
-    <string name="extract_boot_a">Extract boot_a</string>
+    <string name="dump_boot_a">Dump boot_a</string>
     <string name="write_boot_a">Write boot_a</string>
-    <string name="extract_boot_b">Extract boot_b</string>
+    <string name="dump_boot_b">Dump boot_b</string>
     <string name="write_boot_b">Write boot_b</string>
     <string name="target_partition">Target Partition：%s</string>
     <string name="run">Run</string>
     <string name="confirm_write_custom_partition">I want read/write other partitions\nI understand that this may have irreversible consequences.</string>
-    <string name="extract_custom_partition">Extract Custom Partition</string>
+    <string name="dump_custom_partition">Dump Custom Partition</string>
     <string name="write_custom_partition">Write Custom Partition</string>
     <string name="author_info">Author: efojug Github: github.com/efojug/BootFlasher</string>
     <string name="logs">Application Log</string>
@@ -23,16 +23,16 @@
     <string name="current_slot">Current Slot：</string>
     <string name="unknown">Unknown</string>
     <string name="boot_partition">boot Partition：</string>
-    <string name="extract_boot">Extract boot</string>
+    <string name="dump_boot">Dump boot</string>
     <string name="write_boot">Write boot</string>
-    <string name="boot_a_partition">boot_a Partition path：</string>
-    <string name="boot_b_partition">boot_b Partition path：</string>
+    <string name="boot_a_path">boot_a Path：</string>
+    <string name="boot_b_path">boot_b Path：</string>
     <string name="get_partiton_failed">Get %1$s Partition Failed：%2$s</string>
     <string name="no_root">Please give root Permissions</string>
     <string name="select_partition_file">Select Partition File</string>
     <string name="input_partition_name_notice">Input Partition Name</string>
-    <string name="write_partition">Write Partition</string>
-    <string name="extract_partition">Extract Partition</string>
+    <string name="write_partition">Write partition</string>
+    <string name="dump_partition">Dump Partition</string>
     <string name="warning">Warning</string>
     <string name="enable_warn">This only applies when using Magisk as a root permission manager.\nMagisk may automatically fake the BootLoader unlock status.\nYou have been warned!</string>
     <string name="confirm">Confirm</string>
@@ -47,10 +47,10 @@
     <string name="extract_to">Extracted to：%s</string>
     <string name="unknown_error">Unknown Error：%s</string>
     <string name="get_partitions_list">Get partitions list</string>
-    <string name="waiting">Please wait...</string>
+    <string name="waiting">Please wait…</string>
     <string name="get_partitons_list_failed">Get partitions list failed</string>
     <string name="partitions_list">Partitions list：\n%s</string>
-    <string name="extract_failed">Extract Failed：%s</string>
+    <string name="dump_failed">Dump Failed：%s</string>
     <string name="restrict_feature_unlocked">Restricted feature unlocked.</string>
     <string name="list_all_partitions">List all partitions</string>
 </resources>

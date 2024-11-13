@@ -79,7 +79,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="@string/extract_boot_a" />
+            android:text="@string/dump_boot_a" />
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/write_boot_a"
@@ -110,7 +110,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="@string/extract_boot_b" />
+            android:text="@string/dump_boot_b" />
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/write_boot_b"
@@ -165,11 +165,11 @@
         android:visibility="gone">
 
         <Button
-            android:id="@+id/extract_custom_partition"
+            android:id="@+id/dump_custom_partition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="@string/extract_custom_partition" />
+            android:text="@string/dump_custom_partition" />
 
         <Button
             android:id="@+id/list_all_partitions"
