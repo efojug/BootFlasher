@@ -203,7 +203,7 @@
         android:text="@string/logs"
         android:textSize="16sp" />
 
-    z<ScrollView
+    <ScrollView
         android:id="@+id/log_scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
