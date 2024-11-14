@@ -24,10 +24,10 @@ public class FileUtil {
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public static String getPath(final Context context, final Uri uri) {
 
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+        final boolean isKitKat = true;
 
         // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+        if (DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
             //一些三方的文件浏览器会进入到这个方法中，例如ES
             //QQ文件管理器不在此列
@@ -150,7 +150,6 @@ public class FileUtil {
      * 使用第三方qq文件管理器打开
      *
      * @param uri
-     * @return
      */
     public static boolean isQQMediaDocument(Uri uri) {
         return "com.tencent.mtt.fileprovider".equals(uri.getAuthority());

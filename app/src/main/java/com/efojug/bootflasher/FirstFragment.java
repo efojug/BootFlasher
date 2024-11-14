@@ -60,7 +60,7 @@ public class FirstFragment extends Fragment {
 
     Vector<String> logs = new Vector<>();
 
-    public void outputLog(String log) {
+    void outputLog(String log) {
         if (logs.size() > 50) logs.remove(0);
         logs.add(new SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(new Date()) + "> " + log + "\n");
         StringBuilder tmp = new StringBuilder();
@@ -84,7 +84,7 @@ public class FirstFragment extends Fragment {
             Aonly = true;
         }
 
-        if (SystemPropertiesUtils.getProperty("ro.boot.flash.locked", "1").equals("1") || SystemPropertiesUtils.getProperty("ro.boot.verifiedbootstate", "green").equals("green")) {
+        if ("1".equals(SystemPropertiesUtils.getProperty("ro.boot.flash.locked", "1")) || "green".equals(SystemPropertiesUtils.getProperty("ro.boot.verifiedbootstate", "green"))) {
             binding.notUnlockBootloader.setVisibility(View.VISIBLE);
             binding.blNotice.setVisibility(View.VISIBLE);
             binding.unlock.setVisibility(View.VISIBLE);
@@ -161,13 +161,13 @@ public class FirstFragment extends Fragment {
         });
 
         binding.writeCustomPartition.setOnClickListener(view1 -> {
-            EditText CustomPartitionName = new EditText(requireContext());
-            CustomPartitionName.setSingleLine();
-            CustomPartitionName.setHint(getString(R.string.input_partition_name_notice));
-            CustomPartitionName.requestFocus();
-            CustomPartitionName.setFocusable(true);
-            new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.write_partition)).setView(CustomPartitionName).setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
-                String content = CustomPartitionName.getText().toString();
+            EditText customPartitionName = new EditText(requireContext());
+            customPartitionName.setSingleLine();
+            customPartitionName.setHint(getString(R.string.input_partition_name_notice));
+            customPartitionName.requestFocus();
+            customPartitionName.setFocusable(true);
+            new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.write_partition)).setView(customPartitionName).setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+                String content = customPartitionName.getText().toString();
                 if (content.isBlank()) {
                     Toast.makeText(requireContext(), getString(R.string.input_partition_name_notice), Toast.LENGTH_SHORT).show();
                     return;
@@ -185,19 +185,19 @@ public class FirstFragment extends Fragment {
         });
 
         binding.dumpCustomPartition.setOnClickListener(view1 -> {
-            EditText CustomPartitionName = new EditText(requireContext());
-            CustomPartitionName.setSingleLine();
-            CustomPartitionName.setHint(getString(R.string.input_partition_name_notice));
-            CustomPartitionName.requestFocus();
-            CustomPartitionName.setFocusable(true);
-            new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.dump_partition)).setView(CustomPartitionName).setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
-                String content = CustomPartitionName.getText().toString();
+            EditText customPartitionName = new EditText(requireContext());
+            customPartitionName.setSingleLine();
+            customPartitionName.setHint(getString(R.string.input_partition_name_notice));
+            customPartitionName.requestFocus();
+            customPartitionName.setFocusable(true);
+            new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.dump_partition)).setView(customPartitionName).setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+                String content = customPartitionName.getText().toString();
                 if (content.isBlank()) {
                     Toast.makeText(requireContext(), getString(R.string.input_partition_name_notice), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
-                    dumpPartition(CustomPartitionName.getText().toString(), getPartition(CustomPartitionName.getText().toString()));
+                    dumpPartition(customPartitionName.getText().toString(), getPartition(customPartitionName.getText().toString()));
                 } catch (Exception e) {
                     outputLog(getString(R.string.get_partiton_failed, content, e));
                 }
@@ -258,30 +258,30 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public void setPartitionRW(String PartitionName, boolean OutputLog) throws ExecutionException, InterruptedException {
-        exeCmd("blockdev --setrw " + PartitionName, OutputLog);
+    void setPartitionRW(String partitionName) throws ExecutionException, InterruptedException {
+        exeCmd("blockdev --setrw " + partitionName, false);
     }
 
     String defaultSaveDir = "/storage/emulated/0/Download/";
-    String PartitionCopyCmd = "dd if=%s of=%s.img bs=4M;sync";
+    String partitionCopyCmd = "dd if=%s of=%s.img bs=4M;sync";
     String date = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(new Date());
 
-    public void dumpPartition(String name, String partition) {
+    void dumpPartition(String name, String partition) {
         try {
             switch (partition) {
                 case "boot_a":
-                    setPartitionRW(boot_a, false);
-                    exeCmd(String.format(PartitionCopyCmd, boot_a, defaultSaveDir + (Aonly ? "boot_" : "boot_a_") + date), true);
+                    setPartitionRW(boot_a);
+                    exeCmd(String.format(partitionCopyCmd, boot_a, defaultSaveDir + (Aonly ? "boot_" : "boot_a_") + date), true);
                     outputLog(getString(R.string.extract_to, "/Download/" + (Aonly ? "boot_" : "boot_a_") + date + ".img"));
                     break;
                 case "boot_b":
-                    setPartitionRW(boot_b, false);
-                    exeCmd(String.format(PartitionCopyCmd, boot_b, defaultSaveDir, "boot_b_" + date), true);
+                    setPartitionRW(boot_b);
+                    exeCmd(String.format(partitionCopyCmd, boot_b, defaultSaveDir, "boot_b_" + date), true);
                     outputLog(getString(R.string.extract_to, "/Download/boot_b_" + date + ".img"));
                     break;
                 default:
-                    setPartitionRW(partition, false);
-                    exeCmd(String.format(PartitionCopyCmd, partition, defaultSaveDir, name + "_" + date), true);
+                    setPartitionRW(partition);
+                    exeCmd(String.format(partitionCopyCmd, partition, defaultSaveDir, name + "_" + date), true);
                     outputLog(getString(R.string.extract_to, "/Download/" + name + "_" + date + ".img"));
                     break;
             }
@@ -290,10 +290,10 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public void writePartition(String imgPath, String targetPath) {
+    void writePartition(String imgPath, String targetPath) {
         try {
-            setPartitionRW(targetPath, false);
-            exeCmd(String.format(PartitionCopyCmd, imgPath, targetPath), true);
+            setPartitionRW(targetPath);
+            exeCmd(String.format(partitionCopyCmd, imgPath, targetPath), true);
             binding.sourceFile.setText(getString(R.string.source_file, getString(R.string.not_selected)));
             binding.targetPartition.setText(getString(R.string.target_partition, getString(R.string.not_selected)));
         } catch (Exception e) {
@@ -307,7 +307,7 @@ public class FirstFragment extends Fragment {
         binding = null;
     }
 
-    public boolean getRoot() {
+    boolean getRoot() {
         try {
             Runtime.getRuntime().exec("su");
             return true;
@@ -317,13 +317,13 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    public String getPartition(String partitionName) throws Exception {
+    String getPartition(String partitionName) throws Exception {
         String res = exeCmd("readlink -f /dev/block/by-name/" + partitionName, false);
         if (!res.contains("by-name")) return res;
         throw new Exception(getString(R.string.real_link_error));
     }
 
-    public String exeCmd(String command, boolean log) throws InterruptedException, ExecutionException {
+    String exeCmd(String command, boolean log) throws InterruptedException, ExecutionException {
         StringBuilder sb = new StringBuilder();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> futureResult = executor.submit(() -> {
