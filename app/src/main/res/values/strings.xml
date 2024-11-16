@@ -5,7 +5,7 @@
     <string name="refresh">Refresh</string>
     <string name="previous">Previous</string>
     <string name="aonly_warn">Your devices partitions type is A-only，\nUse this tool maybe cause unknown issues!</string>
-    <string name="bootloader_warn">Detected Bootloader is not unlocked!</string>
+    <string name="bootloader_warn">Bootloader not unlocked!</string>
     <string name="bootloader_warn_details">Warning：Modification of partitions on a device with an unlocked bootloader will cause the device to fail to boot</string>
     <string name="unlocked_bootloader">I already unlocked the Bootloader</string>
     <string name="dump_boot_a">Dump boot_a</string>
@@ -14,7 +14,7 @@
     <string name="write_boot_b">Write boot_b</string>
     <string name="target_partition">Target Partition：%s</string>
     <string name="run">Run</string>
-    <string name="confirm_write_custom_partition">I want read/write other partitions\nI understand that this may have irreversible consequences.</string>
+    <string name="confirm_write_custom_partition">I want read/write other partitions\nI understand the possible consequences of doing this</string>
     <string name="dump_custom_partition">Dump Custom Partition</string>
     <string name="write_custom_partition">Write Custom Partition</string>
     <string name="author_info">Author: efojug Github: github.com/efojug/BootFlasher</string>
@@ -30,11 +30,11 @@
     <string name="get_partiton_failed">Get %1$s Partition Failed：%2$s</string>
     <string name="no_root">Please give root Permissions</string>
     <string name="select_partition_file">Select Partition File</string>
-    <string name="input_partition_name_notice">Input Partition Name</string>
+    <string name="input_partition_name_notice">Partition Name</string>
     <string name="write_partition">Write partition</string>
     <string name="dump_partition">Dump Partition</string>
     <string name="warning">Warning</string>
-    <string name="enable_warn">This only applies when using Magisk as a root permission manager.\nMagisk may automatically fake the BootLoader unlock status.\nYou have been warned!</string>
+    <string name="enable_warn">This only applies if you are using Magisk as a root manager, or you are using a bypass detection module.\nYou have been warned!</string>
     <string name="confirm">Confirm</string>
     <string name="path_error">Not getting the correct path</string>
     <string name="path_error_detail">This may be because you selected a file that has been deleted.\nThis seems to be a bug in the SAF. You can use other file selectors to select by clicking the upper left corner of the SAF page.\nUsually restarting the phone will refresh the cache of the SAF.</string>
@@ -42,9 +42,9 @@
     <string name="real_link_error">Unable to get partition path</string>
     <string name="write_failed">Write Failed：%s</string>
     <string name="not_selected">Not Selected</string>
-    <string name="write_confirm">You will write\n%s\nto\n%s\nWarning：this operation is irreversible！</string>
+    <string name="write_confirm">You will write\n%s\nto\n%s</string>
     <string name="cancel">Cancel</string>
-    <string name="extract_to">Extracted to：%s</string>
+    <string name="dumped_to">Dumped to：%s</string>
     <string name="unknown_error">Unknown Error：%s</string>
     <string name="get_partitions_list">Get partitions list</string>
     <string name="waiting">Please wait…</string>

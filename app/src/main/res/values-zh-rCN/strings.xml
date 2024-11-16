@@ -4,7 +4,7 @@
     <string name="fragment_label">写入或导出分区文件</string>
     <string name="refresh">刷新</string>
     <string name="previous">返回</string>
-    <string name="aonly_warn">您的设备分区类型为Aonly，\n使用本工具可能导致未知错误!</string>
+    <string name="aonly_warn">您的设备分区类型为Aonly，\n使用本工具可能导致未知问题!</string>
     <string name="bootloader_warn">检测到未解锁Bootloader!</string>
     <string name="bootloader_warn_details">注意：在未解锁Bootloader的设备上修改分区会导致无法开机</string>
     <string name="unlocked_bootloader">我已解锁Bootloader</string>
@@ -14,7 +14,7 @@
     <string name="write_boot_b">刷入boot_b</string>
     <string name="target_partition">目标：%s</string>
     <string name="run">执行</string>
-    <string name="confirm_write_custom_partition">我希望刷写其他分区\n我已了解这可能造成无法挽回的后果</string>
+    <string name="confirm_write_custom_partition">我希望刷写其他分区\n我已充分了解这么做可能造成的后果</string>
     <string name="dump_custom_partition">导出自定义分区</string>
     <string name="write_custom_partition">刷入自定义分区</string>
     <string name="author_info">作者: efojug Github: github.com/efojug/BootFlasher</string>
@@ -30,11 +30,11 @@
     <string name="get_partiton_failed">获取 %s 分区失败：%2$s</string>
     <string name="no_root">没有root权限，请给予权限后重试</string>
     <string name="select_partition_file">选择分区文件</string>
-    <string name="input_partition_name_notice">请填写分区名称</string>
+    <string name="input_partition_name_notice">分区名称</string>
     <string name="write_partition">写入分区</string>
     <string name="dump_partition">导出分区</string>
     <string name="warning">警告</string>
-    <string name="enable_warn">这只适用于一些使用Magisk作为Root权限管理器时，Magisk可能会自动伪装BootLoader解锁状态\n您已经被警告过了</string>
+    <string name="enable_warn">这只适用于使用Magisk作为root权限管理器，或者您使用了伪装模块的情况。\n您已经被警告过了</string>
     <string name="confirm">确定</string>
     <string name="path_error">没有正确获取到文件的路径</string>
     <string name="path_error_detail">这可能是您选择了一个已经被删除的文件\n这似乎是Android文件选择器的Bug，您可以在选择页面点击左上角使用其他文件选择器来选择\n通常重启手机会刷新Android文件选择器的缓存</string>
@@ -42,12 +42,12 @@
     <string name="real_link_error">无法获取分区路径</string>
     <string name="write_failed">写入失败：%s</string>
     <string name="not_selected">未选择</string>
-    <string name="write_confirm">您将要把\n%s\n刷入到\n%s\n请注意：此操作不可逆！</string>
+    <string name="write_confirm">您将要把\n%s\n刷入到\n%s</string>
     <string name="cancel">取消</string>
-    <string name="extract_to">导出到：%s</string>
+    <string name="dumped_to">导出到：%s</string>
     <string name="unknown_error">未知错误：%s</string>
     <string name="get_partitions_list">检索分区列表</string>
-    <string name="waiting">请等待...</string>
+    <string name="waiting">请等待…</string>
     <string name="get_partitons_list_failed">获取分区列表失败</string>
     <string name="partitions_list">分区列表：\n%s</string>
     <string name="dump_failed">导出失败：%s</string>
