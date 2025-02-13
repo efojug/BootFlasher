@@ -271,17 +271,17 @@ public class FirstFragment extends Fragment {
             switch (partition) {
                 case "boot_a":
                     setPartitionRW(boot_a);
-                    exeCmd(String.format(partitionCopyCmd, boot_a, defaultSaveDir + (Aonly ? "boot_" : "boot_a_") + date), true);
+                    exeCmd("dd if=" + boot_a + " of=" + defaultSaveDir + (Aonly ? "boot_" : "boot_a_") + date + ".img bs=4M;sync", true);
                     outputLog(getString(R.string.dumped_to, "/Download/" + (Aonly ? "boot_" : "boot_a_") + date + ".img"));
                     break;
                 case "boot_b":
                     setPartitionRW(boot_b);
-                    exeCmd(String.format(partitionCopyCmd, boot_b, defaultSaveDir, "boot_b_" + date), true);
+                    exeCmd("dd if=" + boot_b + " of=" + defaultSaveDir + "boot_b_" + date + ".img bs=4M;sync", true);
                     outputLog(getString(R.string.dumped_to, "/Download/boot_b_" + date + ".img"));
                     break;
                 default:
                     setPartitionRW(partition);
-                    exeCmd(String.format(partitionCopyCmd, partition, defaultSaveDir, name + "_" + date), true);
+                    exeCmd("dd if=" + partition + " of=" + defaultSaveDir + name + "_" + date + ".img bs=4M;sync", true);
                     outputLog(getString(R.string.dumped_to, "/Download/" + name + "_" + date + ".img"));
                     break;
             }
