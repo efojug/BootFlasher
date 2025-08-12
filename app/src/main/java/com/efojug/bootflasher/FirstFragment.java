@@ -69,6 +69,7 @@ public class FirstFragment extends Fragment {
         binding.logScrollview.postDelayed(() -> binding.logScrollview.fullScroll(View.FOCUS_DOWN), 100);
     }
 
+    @Override
     @SuppressLint("SetTextI18n")
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -79,7 +80,7 @@ public class FirstFragment extends Fragment {
         if (!Objects.equals(SystemPropertiesUtils.getProperty("ro.build.ab_update", "false"), "true")) {
             binding.aonlyWarning.setVisibility(View.VISIBLE);
             binding.slot.setVisibility(View.GONE);
-            binding.extractBootB.setEnabled(false);
+            binding.dumpBootB.setEnabled(false);
             binding.writeBootB.setEnabled(false);
             Aonly = true;
         }
@@ -110,7 +111,7 @@ public class FirstFragment extends Fragment {
                     boot_a = getPartition("boot");
                     boot_a = boot_a.substring(0, boot_a.length() - 1);
                     binding.bootA.setText(getString(R.string.boot_partition) + boot_a);
-                    binding.extractBootA.setText(getString(R.string.dump_boot));
+                    binding.dumpBootA.setText(getString(R.string.dump_boot));
                     binding.writeBootA.setText(getString(R.string.write_boot));
                 } else {
                     boot_a = getPartition("boot_a");
@@ -140,8 +141,8 @@ public class FirstFragment extends Fragment {
             Runtime.getRuntime().halt(1);
         }
 
-        binding.extractBootA.setOnClickListener(view1 -> dumpPartition(null, "boot_a"));
-        binding.extractBootB.setOnClickListener(view1 -> dumpPartition(null, "boot_b"));
+        binding.dumpBootA.setOnClickListener(view1 -> dumpPartition(null, "boot_a"));
+        binding.dumpBootB.setOnClickListener(view1 -> dumpPartition(null, "boot_b"));
 
         binding.writePartition.setOnClickListener(view1 -> new MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.warning)).setMessage(getString(R.string.write_confirm, sourcePath, targetPath)).setPositiveButton(getString(R.string.confirm), (dialogInterface, i) -> {
             binding.writePartition.setEnabled(false);
@@ -271,17 +272,17 @@ public class FirstFragment extends Fragment {
             switch (partition) {
                 case "boot_a":
                     setPartitionRW(boot_a);
-                    exeCmd("dd if=" + boot_a + " of=" + defaultSaveDir + (Aonly ? "boot_" : "boot_a_") + date + ".img bs=4M;sync", true);
+                    exeCmd(String.format(partitionCopyCmd, boot_a, defaultSaveDir + (Aonly ? "boot_" : "boot_a_") + date), true);
                     outputLog(getString(R.string.dumped_to, "/Download/" + (Aonly ? "boot_" : "boot_a_") + date + ".img"));
                     break;
                 case "boot_b":
                     setPartitionRW(boot_b);
-                    exeCmd("dd if=" + boot_b + " of=" + defaultSaveDir + "boot_b_" + date + ".img bs=4M;sync", true);
+                    exeCmd(String.format(partitionCopyCmd, boot_b, defaultSaveDir + "boot_b_" + date), true);
                     outputLog(getString(R.string.dumped_to, "/Download/boot_b_" + date + ".img"));
                     break;
                 default:
                     setPartitionRW(partition);
-                    exeCmd("dd if=" + partition + " of=" + defaultSaveDir + name + "_" + date + ".img bs=4M;sync", true);
+                    exeCmd(String.format(partitionCopyCmd, partition, defaultSaveDir + name + "_" + date), true);
                     outputLog(getString(R.string.dumped_to, "/Download/" + name + "_" + date + ".img"));
                     break;
             }
