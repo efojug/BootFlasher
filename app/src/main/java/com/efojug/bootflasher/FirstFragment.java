@@ -2,6 +2,8 @@ package com.efojug.bootflasher;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -99,7 +101,7 @@ public class FirstFragment extends Fragment {
             binding.unlock.setVisibility(View.GONE);
             binding.blNotice.setVisibility(View.GONE);
             binding.writeBootA.setEnabled(true);
-            binding.writeBootB.setEnabled(true);
+            binding.writeBootB.setEnabled(!Aonly);
             binding.writeCustomPartition.setEnabled(true);
             outputLog(getString(R.string.restrict_feature_unlocked));
         }).setNegativeButton(getString(R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss()).show());
@@ -137,8 +139,7 @@ public class FirstFragment extends Fragment {
 
         } else {
             Toast.makeText(requireContext(), getString(R.string.no_root), Toast.LENGTH_LONG).show();
-            System.setSecurityManager(new SecurityManager());
-            Runtime.getRuntime().halt(1);
+            getActivity().finishAndRemoveTask();
         }
 
         binding.dumpBootA.setOnClickListener(view1 -> dumpPartition(null, "boot_a"));
