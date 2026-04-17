@@ -3,7 +3,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
-    id("org.jetbrains.kotlin.android")
 }
 
 val versionPropsFile = File(project.rootProject.projectDir, "version.properties")
@@ -27,14 +26,14 @@ android {
         }
     }
     namespace = "com.efojug.bootflasher"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.efojug.bootflasher"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 37
         versionCode = getVersionCode()
-        versionName = "3.7"
+        versionName = "3.8"
     }
 
     buildTypes {
@@ -58,9 +57,6 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 dependencies {
@@ -72,6 +68,3 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.kotlinx.coroutines)
 }
-//configurations.all {
-//    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-//}
